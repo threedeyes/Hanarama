@@ -7,6 +7,10 @@ Build
 -----
 
 Cloning repo:
+
     $ git clone https://github.com/threedeyes/Hanarama
+
+
 Building project:
+
     $ make
