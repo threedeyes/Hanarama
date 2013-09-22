@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
+#include <String.h>
+#include <TranslationUtils.h>
+
+#include "TestApplication.h"
+#include "TestWindow.h"
+#include "FBView.h"
+#include "Camera.h"
+#include "FastMath.h"
+#include "Render.h"
+#include "FadeFilter.h"
+#include "BlurFilter.h"
+#include "MotionBlurFilter.h"
+
+PCamera *fCam = NULL;
+float _starttime, _lasttime;
+
+float getTime(void)
+{ 
+	return system_time()/1000000.0;
+}
+
+
+int32 renderer(void *data)
+{
+	char temp[16];
+	int counter=0;
+		
+	FBView *view=(FBView*)data;
+  	BBitmap *dstBmp = view->GetBitmap();
+	BBitmap *srcBmp = BTranslationUtils::GetBitmapFile(view->filename.Path());
+
+	fCam = new PCamera();
+	fCam->SetMode(CAM_MODE_MANUAL);	
+
+	PRender *render = new PRender(srcBmp, (uint32*)dstBmp->Bits(), dstBmp->Bounds().Width()+1, dstBmp->Bounds().Height()+1, fCam);
+	render->InitMultiRenders(1);
+	
+	PFadeFilter fader(dstBmp);
+	PBlurFilter blurer(dstBmp);
+	PMotionBlurFilter mblurer(dstBmp);
+	
+  	_starttime = _lasttime = getTime();
+  	
+  	float time;
+  	
+  	fader.SetFade(80);
+  	
+  	for(;; counter++) {    	
+    	render->Render();
+    	//fader.Apply();
+    	//blurer.Apply();
+    	//mblurer.Apply();
+
+		view->Paint();
+
+  		time = getTime();
+		if(time - _lasttime > 1.0) {
+			float fps = 1.0/((time - _lasttime)/counter);
+			_lasttime = time;
+			int fps_int = (int)fps;
+			if(fps_int<0)fps_int=0;
+			const char *mode[]={"Manual","Auto panning","Random","Left scrolling","Right scrolling"};
+			sprintf(temp,"FPS:%d  %s",(int)fps_int, mode[fCam->Mode()]);
+			view->Window()->SetTitle(temp);
+			counter = -1;
+		}		    	
+  	}
+  	return 0;
+}
