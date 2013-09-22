@@ -10,16 +10,20 @@ OBJS := TestApplication.o \
 		Filter.o \
 		MotionBlurFilter.o \
 		PanoramaThread.o \
-		Render.o
+		Render.o \
+		Routunes.o
 		
 OBJDIR := build
+
 RSRCS := res/HanaramaViewer.rsrc
 
 OBJS	:= $(addprefix $(OBJDIR)/,$(OBJS))
 
-LIBS := -lroot -lbe -lstdc++ -ltranslation
 CC := clang
-LD := clang
+ASM := yasm
+LD := $(CC)
+
+LIBS := -lroot -lbe -lstdc++ -ltranslation
 CFLAGS := -O3 -ffast-math -msse -msse2 -mmmx -I./includes
 LDFLAGS := 
 
@@ -30,8 +34,7 @@ default : build
 build : $(BINARY)
 	
 $(BINARY) : $(OBJDIR) $(OBJS) $(RSRCS)
-	yasm -f elf -o build/Routunes.o src/Routunes.asm
-	$(LD) $(LIBS) $(OBJS) -o $(BINARY) $(LDFLAGS) build/Routunes.o
+	$(LD) $(LIBS) $(OBJS) -o $(BINARY) $(LDFLAGS)
 	xres -o $(BINARY) $(RSRCS)
 	mimeset -f $(BINARY)
 
@@ -43,4 +46,7 @@ $(OBJDIR)/%.o : src/%.cpp
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(OBJDIR)/%.o : src/%.asm
+	@mkdir -p $(OBJDIR)
+	$(ASM) -f elf $< -o $@
 
