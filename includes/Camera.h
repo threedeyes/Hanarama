@@ -38,47 +38,49 @@ typedef struct {
 class PCamera
 {
  public:
-			PCamera();
-			PCamera(float heading, float pitch, float fov);
-			~PCamera();
-	
-	void	SetCamera(float heading, float pitch, float fov);
-	float	SetHeading(float heading);
-	float	SetPitch(float pitch);
-	float	SetFOV(float fov);
-
-	float	MoveHeadingBy(float dheading);
-	float	MovePitchBy(float dpitch);
-	float	MoveFOVBy(float dfov);
+				PCamera();
+				PCamera(float heading, float pitch, float fov);
+				~PCamera();
 		
-	float	Heading(void);
-	float	Pitch(void);
-	float	FOV(void);
+		void	SetCamera(float heading, float pitch, float fov);
+		float	SetHeading(float heading);
+		float	SetPitch(float pitch);
+		float	SetFOV(float fov);
 	
-	int		SetMode(int mode);
-	int		Mode(void);
-	
-	void	GetCoeffs(CameraCoeffs *coeffs);
+		float	MoveHeadingBy(float dheading);
+		float	MovePitchBy(float dpitch);
+		float	MoveFOVBy(float dfov);
+			
+		float	Heading(void);
+		float	Pitch(void);
+		float	FOV(void);
+		
+		int		SetMode(int mode);
+		int		Mode(void);
+		
+		void	GetCoeffs(CameraCoeffs *coeffs);
 	
  private:
- 
- 	void	recalcCamera(void);
- 	void	startThread(void);
- 	void	stopThread(void);
- 	void	initCamera(float heading, float pitch, float fov);
- 	
- 	float	fHeading;
- 	float	fPitch;
- 	float	fFOV;
- 	
-	int		fCameraMode;
- 	
- 	CameraCoeffs	fCoeffs; 	
-	thread_id	fCamThreadId;
-	
+	 	void	initCamera(float heading, float pitch, float fov);
+		void	recalcCamera(void);
+
+ static	int32 	AutoCamThread(void *data);
+	 	void	startThread(void);
+	 	void	stopThread(void);
+
+	 	
+	 	float	fHeading;
+	 	float	fPitch;
+	 	float	fFOV;
+	 	
+		int		fCameraMode;
+	 	
+	 	CameraCoeffs	fCoeffs; 	
+		thread_id	fCamThreadId;
+		
  public:
- 	float	fTimeFactor;
- 	sem_id	fCamLocker;
+	 	float	fTimeFactor;
+ 		sem_id	fCamLocker;
 };
 
 #endif

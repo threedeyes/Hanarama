@@ -6,69 +6,6 @@
 
 #include "Camera.h"
 
-int32 AutoCamThread(void *data)
-{
-	PCamera *fCamera = (PCamera*)data;
-	
-	float lastTime = system_time()/1000000.0;
-	float randPitch = fCamera->Pitch(),
-		  randFOV = fCamera->FOV(),
-		  randHeading = fCamera->Heading();
-	float lastPitch = randPitch,
-		  lastFOV = randFOV,
-		  lastHeading = randHeading;
-	float dPitch = 0,
-		  dFOV = 0,
-		  dHeading = 0;
-	float step = 0;
-	
-	for(;;) {
-		float tFactor = fCamera->fTimeFactor;
-		
-		if(fCamera->Mode() == CAM_MODE_AUTO_PANNIG) {
-			float time = system_time()/1000000.0;
-			float fov = (30+(0.5+sin(tFactor * time/8)*cos(tFactor * time/11.7)*sin(tFactor * time/7.1))*60)*M_PI/180.0;	
-			float heading = ((sin(tFactor * time/19.2)*sin(tFactor * time/16.34)+1)/2)*4*M_PI;
-			float pitch = (20+((sin(tFactor * time/5.1)*cos(tFactor * time/7.2)+1)/2)*150)*M_PI/180.0;
-			fCamera->SetCamera(heading, pitch, fov);
-		} else if(fCamera->Mode() == CAM_MODE_AUTO_RANDOM) {
-			float time = system_time()/1000000.0;
-			if(time - lastTime > 3.0) {
-				lastPitch = randPitch;
-		  		lastFOV = randFOV;
-		  		lastHeading = randHeading;
-			
-				randPitch = (rand() % 314)/100.0;
-				randFOV = (rand() % 314)/100.0;
-				randHeading = (rand() % 628)/100.0;
-				dPitch = -(lastPitch - randPitch)/200.0;
-				dFOV = -(lastFOV - randFOV)/200.0;
-				dHeading = -(lastHeading - randHeading)/200.0;
-				lastTime = time;
-				step = 0;
-			}
-			fCamera->SetCamera(lastHeading + dHeading * step,
-							   lastPitch + dPitch * step,
-							   lastFOV + dFOV * step);
-							   			
-			step = step<200?(step+1):step;
-		} else if(fCamera->Mode() == CAM_MODE_AUTO_ROTATE_LEFT) {
-			float time = system_time()/1000000.0;
-			float heading = (time * M_PI * 2)	* tFactor * 0.02;
-			float fov = 1.3;
-			float pitch = M_PI_2;
-			fCamera->SetCamera(heading, pitch, fov);
-		} else if(fCamera->Mode() == CAM_MODE_AUTO_ROTATE_RIGHT) {
-			float time = system_time()/1000000.0;
-			float heading = - (time * M_PI * 2)	* tFactor * 0.02;
-			float fov = 1.3;
-			float pitch = M_PI_2;
-			fCamera->SetCamera(heading, pitch, fov);
-		}		
-				
-		snooze(5000);
-	}
-}
 
 PCamera::PCamera()
 {
@@ -241,10 +178,72 @@ PCamera::recalcCamera(void)
 	release_sem(fCamLocker);
 }
 
+int32
+PCamera::AutoCamThread(void *data)
+{
+	PCamera *fCamera = (PCamera*)data;
+	
+	float lastTime = system_time()/1000000.0;
+	float randPitch = fCamera->Pitch(),
+		  randFOV = fCamera->FOV(),
+		  randHeading = fCamera->Heading();
+	float lastPitch = randPitch,
+		  lastFOV = randFOV,
+		  lastHeading = randHeading;
+	float dPitch = 0,
+		  dFOV = 0,
+		  dHeading = 0;
+	float step = 0;
+	
+	for(;;) {
+		float tFactor = fCamera->fTimeFactor;
+		float time = system_time()/1000000.0;
+		
+		if(fCamera->Mode() == CAM_MODE_AUTO_PANNIG) {
+			float fov = (30+(0.5+sin(tFactor * time/8)*cos(tFactor * time/11.7)*sin(tFactor * time/7.1))*60)*M_PI/180.0;	
+			float heading = ((sin(tFactor * time/19.2)*sin(tFactor * time/16.34)+1)/2)*4*M_PI;
+			float pitch = (20+((sin(tFactor * time/5.1)*cos(tFactor * time/7.2)+1)/2)*150)*M_PI/180.0;
+			fCamera->SetCamera(heading, pitch, fov);
+		} else if(fCamera->Mode() == CAM_MODE_AUTO_RANDOM) {
+			if(time - lastTime > 3.0) {
+				lastPitch = randPitch;
+		  		lastFOV = randFOV;
+		  		lastHeading = randHeading;
+			
+				randPitch = (rand() % 314)/100.0;
+				randFOV = (rand() % 314)/100.0;
+				randHeading = (rand() % 628)/100.0;
+				dPitch = -(lastPitch - randPitch)/200.0;
+				dFOV = -(lastFOV - randFOV)/200.0;
+				dHeading = -(lastHeading - randHeading)/200.0;
+				lastTime = time;
+				step = 0;
+			}
+			fCamera->SetCamera(lastHeading + dHeading * step,
+							   lastPitch + dPitch * step,
+							   lastFOV + dFOV * step);
+							   			
+			step = step<200?(step+1):step;
+		} else if(fCamera->Mode() == CAM_MODE_AUTO_ROTATE_LEFT) {
+			float heading = (time * M_PI * 2)	* tFactor * 0.02;
+			float fov = 1.3;
+			float pitch = M_PI_2;
+			fCamera->SetCamera(heading, pitch, fov);
+		} else if(fCamera->Mode() == CAM_MODE_AUTO_ROTATE_RIGHT) {
+			float heading = - (time * M_PI * 2)	* tFactor * 0.02;
+			float fov = 1.3;
+			float pitch = M_PI_2;
+			fCamera->SetCamera(heading, pitch, fov);
+		}
+
+		snooze(5000);
+	}
+}
+
 void
 PCamera::startThread(void)
 {
-	fCamThreadId = spawn_thread(AutoCamThread, "AutoCamThread", B_NORMAL_PRIORITY, (void*)this);
+	fCamThreadId = spawn_thread(PCamera::AutoCamThread, "AutoCamThread", B_NORMAL_PRIORITY, (void*)this);
 	resume_thread(fCamThreadId);
 }
 
