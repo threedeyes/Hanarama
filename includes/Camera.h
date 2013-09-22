@@ -65,18 +65,20 @@ class PCamera
  	void	recalcCamera(void);
  	void	startThread(void);
  	void	stopThread(void);
+ 	void	initCamera(float heading, float pitch, float fov);
  	
  	float	fHeading;
  	float	fPitch;
  	float	fFOV;
  	
 	int		fCameraMode;
- 	CameraCoeffs	fCoeffs;
  	
-	thread_id	CamThreadId;
-
- public:	
+ 	CameraCoeffs	fCoeffs; 	
+	thread_id	fCamThreadId;
+	
+ public:
  	float	fTimeFactor;
+ 	sem_id	fCamLocker;
 };
 
 #endif

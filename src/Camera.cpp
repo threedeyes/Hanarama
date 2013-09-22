@@ -47,9 +47,10 @@ int32 AutoCamThread(void *data)
 				lastTime = time;
 				step = 0;
 			}
-			fCamera->SetPitch(lastPitch + dPitch*step);
-			fCamera->SetFOV(lastFOV + dFOV*step);
-			fCamera->SetHeading(lastHeading + dHeading*step);
+			fCamera->SetCamera(lastHeading + dHeading * step,
+							   lastPitch + dPitch * step,
+							   lastFOV + dFOV * step);
+							   			
 			step = step<200?(step+1):step;
 		} else if(fCamera->Mode() == CAM_MODE_AUTO_ROTATE_LEFT) {
 			float time = system_time()/1000000.0;
@@ -71,34 +72,40 @@ int32 AutoCamThread(void *data)
 
 PCamera::PCamera()
 {
-	fCameraMode = CAM_MODE_MANUAL;
-	fTimeFactor = 1.0;
-	SetCamera(M_PI_2, M_PI_2, M_PI_2);
-	startThread();
+	initCamera(M_PI_2, M_PI_2, M_PI_2);
 }
 
 
 PCamera::PCamera(float heading, float pitch, float fov)
 {
-	fCameraMode = CAM_MODE_MANUAL;
-	fTimeFactor = 1.0;
-	SetCamera(heading, pitch, fov);
-	startThread();
+	initCamera(heading, pitch, fov);
 }
 
 
 PCamera::~PCamera()
-{
+{	
 	stopThread();
+	delete_sem(fCamLocker);
 }
 
+void
+PCamera::initCamera(float heading, float pitch, float fov)
+{
+	fCamLocker = create_sem( 1, "CamLocker");
+	fCameraMode = CAM_MODE_MANUAL;
+	fTimeFactor = 1.0;
+	SetCamera(heading, pitch, fov);
+	startThread();	
+}
 
 void
 PCamera::SetCamera(float heading, float pitch, float fov)
 {
+	acquire_sem(fCamLocker);
 	fHeading = heading;
 	fPitch = pitch;
 	fFOV = fov;
+	release_sem(fCamLocker);
 	recalcCamera();	
 }
 
@@ -106,7 +113,9 @@ PCamera::SetCamera(float heading, float pitch, float fov)
 float
 PCamera::SetHeading(float heading)
 {
+	acquire_sem(fCamLocker);
 	fHeading = heading;	
+	release_sem(fCamLocker);
 	recalcCamera();
 	return fHeading;
 }
@@ -115,7 +124,9 @@ PCamera::SetHeading(float heading)
 float
 PCamera::SetPitch(float pitch)
 {
+	acquire_sem(fCamLocker);
 	fPitch = pitch;
+	release_sem(fCamLocker);
 	recalcCamera();
 	return fPitch;
 }
@@ -124,7 +135,9 @@ PCamera::SetPitch(float pitch)
 float
 PCamera::SetFOV(float fov)
 {
+	acquire_sem(fCamLocker);
 	fFOV = fov;
+	release_sem(fCamLocker);
 	recalcCamera();
 	return fFOV;
 }
@@ -133,7 +146,9 @@ PCamera::SetFOV(float fov)
 float
 PCamera::MoveHeadingBy(float dheading)
 {
+	acquire_sem(fCamLocker);
 	fHeading += dheading;	
+	release_sem(fCamLocker);
 	recalcCamera();
 	return fHeading;
 }
@@ -142,7 +157,9 @@ PCamera::MoveHeadingBy(float dheading)
 float
 PCamera::MovePitchBy(float dpitch)
 {
+	acquire_sem(fCamLocker);
 	fPitch += dpitch;
+	release_sem(fCamLocker);
 	recalcCamera();
 	return fPitch;
 }
@@ -151,7 +168,9 @@ PCamera::MovePitchBy(float dpitch)
 float
 PCamera::MoveFOVBy(float dfov)
 {
+	acquire_sem(fCamLocker);
 	fFOV += dfov;
+	release_sem(fCamLocker);
 	recalcCamera();
 	return fFOV;
 }		
@@ -194,12 +213,15 @@ PCamera::Mode(void)
 void
 PCamera::GetCoeffs(CameraCoeffs *coeffs)
 {
+	acquire_sem(fCamLocker);
 	memcpy(coeffs, &fCoeffs, sizeof(CameraCoeffs));
+	release_sem(fCamLocker);
 }
 
 void
 PCamera::recalcCamera(void)
 {
+	acquire_sem(fCamLocker);
 	//fPitch = fmin(M_PI, fmax(0,fPitch));
 	fFOV = fmin(M_PI_2, fmax(0.5,fFOV));
 	
@@ -216,17 +238,18 @@ PCamera::recalcCamera(void)
 	fCoeffs.PlaneOriginX = fCoeffs.DirX + 0.5 * fCoeffs.UpX - 0.5 * fCoeffs.RightX;
 	fCoeffs.PlaneOriginY = fCoeffs.DirY + 0.5 * fCoeffs.UpY;
 	fCoeffs.PlaneOriginZ = fCoeffs.DirZ + 0.5 * fCoeffs.UpZ - 0.5 * fCoeffs.RightZ;
+	release_sem(fCamLocker);
 }
 
 void
 PCamera::startThread(void)
 {
-	CamThreadId = spawn_thread(AutoCamThread, "AutoCamThread", 20, (void*)this);
-	resume_thread(CamThreadId);
+	fCamThreadId = spawn_thread(AutoCamThread, "AutoCamThread", B_NORMAL_PRIORITY, (void*)this);
+	resume_thread(fCamThreadId);
 }
 
 void
 PCamera::stopThread(void)
 {
-	kill_thread(CamThreadId);
+	kill_thread(fCamThreadId);
 }
