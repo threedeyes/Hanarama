@@ -57,6 +57,8 @@ class PRender
 	uint32				*panoramaBuffer;
 	int32				panoramaWidth;
 	int32				panoramaHeight;
+	int32				panoramaBufferSize;
+	
 	uint32				*frameBuffer;
 	int32				frameWidth;
 	int32				frameHeight;

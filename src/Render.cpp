@@ -37,7 +37,7 @@ PRender::PRender(BBitmap *src, uint32 *dst_buffer, int32 w, int32 h, PCamera *ca
 	frameBuffer = dst_buffer;
 	frameWidth = w;
 	frameHeight = h;
-	frameBufferSize = w * h *sizeof(uint32);
+	frameBufferSize = w * h;
 	threadsCount = 1;
 	
 	SetCamera(camera);
@@ -63,6 +63,7 @@ PRender::SetPanoramaBitmap(BBitmap *bitmap)
 	panoramaWidth = (int32)(fPanoramaBitmap->Bounds().Width() + 1.0);
 	panoramaHeight = (int32)(fPanoramaBitmap->Bounds().Height() + 1.0);
 	panoramaBuffer = (uint32*)fPanoramaBitmap->Bits();
+	panoramaBufferSize = fPanoramaBitmap->BitsLength() / sizeof(uint32);
 	FmRecalcTables(panoramaWidth, panoramaHeight);
 }
 
@@ -149,7 +150,7 @@ PRender::RenderSegment(int32 from, int32 to)
 
 	uint32	*frameOffset = frameBuffer + from * frameWidth;
 						
-	for(i = from, fy = dfy * from; i < to; i++, fy+=dfy) {
+	for(i = from, fy = dfy * from; i <= to; i++, fy+=dfy) {
 		fx_camX = fCamCoeffs.PlaneOriginX - fy*fCamCoeffs.UpX;
 		fx_camZ = fCamCoeffs.PlaneOriginZ - fy*fCamCoeffs.UpZ;
 		rayY = fCamCoeffs.PlaneOriginY - fy*fCamCoeffs.UpY;
@@ -159,8 +160,11 @@ PRender::RenderSegment(int32 from, int32 to)
 		
 		for(j = 0; j < frameWidth; j++, fx_camX += dfx_camX, fx_camZ += dfx_camZ) {
 			pixelShift = FmAcos(rayY * FmRsqrtPrec(fx_camX * fx_camX + rayYY + fx_camZ * fx_camZ))
-						+ FmAtan2(fx_camZ, fx_camX);			
-			*frameOffset++ = panoramaBuffer[pixelShift];
+						 + FmAtan2(fx_camZ, fx_camX);
+			if(pixelShift < panoramaBufferSize)
+				*frameOffset++ = panoramaBuffer[pixelShift];
+			else 
+				*frameOffset++ = 0;
 		}
 	}
 }
