@@ -34,7 +34,7 @@ default : build
 build : $(BINARY)
 	
 $(BINARY) : $(OBJDIR) $(OBJS) $(RSRCS)
-	$(LD) $(LIBS) $(OBJS) -o $(BINARY) $(LDFLAGS)
+	$(LD) $(CFLAGS) $(LIBS) $(OBJS) -o $(BINARY) $(LDFLAGS)
 	xres -o $(BINARY) $(RSRCS)
 	mimeset -f $(BINARY)
 
