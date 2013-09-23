@@ -12,7 +12,7 @@
 #include "Render.h"
 #include "FadeFilter.h"
 #include "BlurFilter.h"
-#include "MotionBlurFilter.h"
+#include "NoiseFilter.h"
 
 PCamera *fCam = NULL;
 float _starttime, _lasttime;
@@ -36,23 +36,24 @@ int32 renderer(void *data)
 	fCam->SetMode(CAM_MODE_MANUAL);	
 
 	PRender *render = new PRender(srcBmp, (uint32*)dstBmp->Bits(), dstBmp->Bounds().Width()+1, dstBmp->Bounds().Height()+1, fCam);
-	render->InitMultiRenders(1);
+	render->InitMultiRenders(2);
 	
 	PFadeFilter fader(dstBmp);
 	PBlurFilter blurer(dstBmp);
-	PMotionBlurFilter mblurer(dstBmp);
+	PNoiseFilter noise(dstBmp);
 	
   	_starttime = _lasttime = getTime();
   	
   	float time;
   	
   	fader.SetFade(80);
+  	noise.SetDispersion(30);
   	
   	for(;; counter++) {    	
     	render->Render();
     	//fader.Apply();
     	//blurer.Apply();
-    	//mblurer.Apply();
+    	//noise.Apply();
 
 		view->Paint();
 

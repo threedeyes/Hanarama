@@ -3,14 +3,14 @@ BINARY := build/Hanarama
 OBJS := TestApplication.o \
 		TestWindow.o \
 		Camera.o \
-		BlurFilter.o \
-		FadeFilter.o \
 		FastMath.o \
 		FBView.o \
 		Filter.o \
-		MotionBlurFilter.o \
 		PanoramaThread.o \
 		Render.o \
+		BlurFilter.o \
+		FadeFilter.o \
+		NoiseFilter.o \
 		Routunes.o
 		
 OBJDIR := build
