@@ -47,7 +47,7 @@ int32 renderer(void *data)
   	float time;
   	
   	fader.SetFade(80);
-  	noise.SetDispersion(30);
+  	noise.SetDispersion(20);
   	
   	for(;; counter++) {    	
     	render->Render();

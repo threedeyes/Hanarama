@@ -5,6 +5,7 @@
  */
  
 #include "NoiseFilter.h"
+#include "FastMath.h"
 
 PNoiseFilter::PNoiseFilter(BBitmap *bitmap)
 	:PFilter(bitmap), fDispersion(0)
@@ -35,9 +36,10 @@ PNoiseFilter::Apply(void)
 	
 	for(uint32 i = 0 ; i < fSize; i++) {
 		color1 = fBuffer[i];
-		int r = c1[0] + rand() % fDispersion;
-		int g = c1[1] + rand() % fDispersion;
-		int b = c1[2] + rand() % fDispersion;
+		int y = FMRand() % fDispersion - fDispersion / 2;
+		int r = c1[0] + y;
+		int g = c1[1] + y;
+		int b = c1[2] + y;
 		if(r>255)r=255;
 		if(g>255)g=255;
 		if(b>255)b=255;

@@ -28,6 +28,7 @@ extern	int32    ATAN2_TABLE_NPX[];
 extern	int32    ATAN2_TABLE_NNY[];
 extern	int32    ATAN2_TABLE_NNX[];
 extern	int32	 ACOS_TABLE[];
+extern	uint32	 FM_RND_SEED;
 
 void FmRecalcTables(float width, float height);
 
@@ -81,6 +82,7 @@ FmRsqrt(float x)
   return x;	
 }
 
+
 inline  float
 FmRsqrtPrec(float x)
 {
@@ -92,5 +94,13 @@ FmRsqrtPrec(float x)
   x = x * (1.5f - xhalf * x * x);
   return x;	
 }
+
+
+inline int FMRand()
+{
+  FM_RND_SEED = (214013*FM_RND_SEED+2531011);
+  return (FM_RND_SEED>>16)&0x7FFF;
+} 
+
 
 #endif

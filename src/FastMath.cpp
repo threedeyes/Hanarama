@@ -17,6 +17,8 @@ int32    ATAN2_TABLE_NNY[ATAN2_TABLE_SIZE + 1];
 int32    ATAN2_TABLE_NNX[ATAN2_TABLE_SIZE + 1];
 int32	 ACOS_TABLE[ACOS_TABLE_SIZE + 1];
 
+uint32	 FM_RND_SEED = 2345345;
+
 void
 FmRecalcTables(float width, float height)
 {
