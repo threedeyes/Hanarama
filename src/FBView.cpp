@@ -49,7 +49,7 @@ FBView::Paint()
   if(LockLooper())	{
  	 //bufferView->LockLooper();
  	 SetDrawingMode(B_OP_COPY);
-	 DrawBitmap(bufferBitmap);//, bufferBitmap->Bounds(), Bounds(), B_FILTER_BITMAP_BILINEAR|B_WAIT_FOR_RETRACE);
+	 DrawBitmap(bufferBitmap, bufferBitmap->Bounds(), Bounds(), B_FILTER_BITMAP_BILINEAR|B_WAIT_FOR_RETRACE);
 	 //bufferView->UnlockLooper();
 	 UnlockLooper();
 	}

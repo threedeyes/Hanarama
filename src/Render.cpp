@@ -21,11 +21,11 @@ PRender::PRender()
 PRender::PRender(BBitmap *src, BBitmap *dst, PCamera *camera)
 {
 	SetPanoramaBitmap(src);
+
 	SetFrameBufferBitmap(dst);
+	threadsCount = 1;		
+
 	SetCamera(camera);
-	frameWidth = 0;
-	frameHeight = 0;	
-	threadsCount = 1;
 }
 
 
