@@ -13,6 +13,8 @@
 #include <string.h>
 #include <Bitmap.h>
 
+#define __USE_ASM_FILTERS__ 1
+
 class PFilter
 {
  public:

@@ -17,8 +17,6 @@ TestWindow::TestWindow(BRect frame, const char* title, BPath path)
  	 	
  	renderer_thread = spawn_thread(renderer,"renderer_thread",B_NORMAL_PRIORITY,(void*)fb);
 	resume_thread(renderer_thread);
-//	Show();
-//	renderer((void*)fb);
 }
 
 
@@ -70,7 +68,7 @@ TestWindow::MessageReceived(BMessage *message)
 			}					
 			
 			if(key==37) {
-				fCam->MoveFOVBy(+5*M_PI/180.0);
+				fCam->MoveFOVBy(5*M_PI/180.0);
 			}
 			if(key==58) {
 				fCam->MoveFOVBy(-5*M_PI/180.0);

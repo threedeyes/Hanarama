@@ -33,8 +33,6 @@ class FBView : public BView
 		virtual void MouseDown(BPoint p);
 		virtual void MouseUp(BPoint p);
  		virtual void MouseMoved(BPoint point, uint32 transit, const BMessage *message);
- 		
- 		virtual void Pulse();
 
 		//Event state
 		bool	mouseIsDown;

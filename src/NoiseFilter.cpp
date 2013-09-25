@@ -7,6 +7,14 @@
 #include "NoiseFilter.h"
 #include "FastMath.h"
 
+
+#ifdef __USE_ASM_FILTERS__
+extern "C" {
+	uint32 noise_asm(uint32 *ptr, uint32 size, uint32 disp);
+}
+#endif
+
+
 PNoiseFilter::PNoiseFilter(BBitmap *bitmap)
 	:PFilter(bitmap), fDispersion(0)
 {	
@@ -27,6 +35,9 @@ PNoiseFilter::~PNoiseFilter()
 void
 PNoiseFilter::Apply(void)
 {
+#ifdef __USE_ASM_FILTERS__
+	noise_asm(fBuffer, fSize, (int32)fDispersion);
+#else
 	uint32 ptr;
 	uint32 color, color1, color2;
 
@@ -52,6 +63,7 @@ PNoiseFilter::Apply(void)
 		
 		fBuffer[i] = color;
 	}
+#endif
 }
 
 void

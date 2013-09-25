@@ -35,8 +35,8 @@ int32 renderer(void *data)
 	fCam = new PCamera();
 	fCam->SetMode(CAM_MODE_MANUAL);	
 
-	PRender *render = new PRender(srcBmp, (uint32*)dstBmp->Bits(), dstBmp->Bounds().Width()+1, dstBmp->Bounds().Height()+1, fCam);
-	render->InitMultiRenders(2);
+	PRender *render = new PRender(srcBmp, dstBmp, fCam);
+	render->InitMultiRenders(1);
 	
 	PFadeFilter fader(dstBmp);
 	PBlurFilter blurer(dstBmp);

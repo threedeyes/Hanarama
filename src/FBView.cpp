@@ -27,14 +27,11 @@ FBView::FBView(BRect rect, int width, int height, BPath path) :
 	filename = path;
 	
 	BRect	fbRect = BRect(0,0,buffer_width-1,buffer_height-1);	
-	//bufferView = new BView(fbRect, "bufferView", B_FOLLOW_ALL_SIDES, 0);
 	bufferBitmap = new BBitmap(fbRect, B_RGB32, true);	
-	//bufferBitmap->AddChild(bufferView);
 
 	mouseIsDown = false;
 	mouseDownPosLastX=0;
 	mouseDownPosLastY=0;	
-	cam_fov_speed = 0;
 	time=-12;
 }
 
@@ -123,17 +120,6 @@ FBView::MouseUp(BPoint p)
 }
 
 void
-FBView::Pulse()
-{
-	if(fCam!=NULL)
-	if(fCam->Mode()==CAM_MODE_MANUAL) {
-		float speed = cam_fov_speed/3.5;
-		fCam->MoveFOVBy(speed*M_PI/180.0);
-		cam_fov_speed = cam_fov_speed*0.75;
-	}
-}
-
-void
 FBView::MouseWheelChanged(BMessage *msg)
 {
 	float dy = 0, dx = 0;
@@ -142,8 +128,10 @@ FBView::MouseWheelChanged(BMessage *msg)
 	if (msg->FindFloat("be:wheel_delta_y", &dy) != B_OK)
 		dy = 0;
 
+	if(fCam->Mode()==CAM_MODE_MANUAL && dy != 0) {
+		fCam->MoveFOVBy(dy * 5 * M_PI / 180.0);
+	}
 	
-	cam_fov_speed += dy*2.1;
 }
 
 void
