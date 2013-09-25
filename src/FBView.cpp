@@ -108,6 +108,7 @@ FBView::MouseDown(BPoint p)
 		mouseIsDown=true;
 		mouseDownPosLastX=p.x;
 		mouseDownPosLastY=p.y;
+		SetMouseEventMask(B_POINTER_EVENTS,B_NO_POINTER_HISTORY);
 	}
 }
 
