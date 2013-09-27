@@ -13,7 +13,7 @@ PBlurFilter::PBlurFilter(BBitmap *bitmap)
 
 
 PBlurFilter::PBlurFilter(uint32 *buffer, uint32 size, uint32 width, uint32 height)
-	:PFilter(buffer, size, width, height) 
+	:PFilter(buffer, size, width, height)
 {
 }
 
@@ -47,11 +47,10 @@ PBlurFilter::Apply(void)
 			color4 = fBuffer[ptr+1];
 			color5 = fBuffer[ptr+fWidth];
 
-	        
 	        c[0] = (c1[0]+c2[0]+c3[0]+c4[0]+c5[0])/5;
 	        c[1] = (c1[1]+c2[1]+c3[1]+c4[1]+c5[1])/5;
 	        c[2] = (c1[2]+c2[2]+c3[2]+c4[2]+c5[2])/5;
-	        	        
+
 			fBuffer[ptr] = color;
 		}
 	}

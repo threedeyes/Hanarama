@@ -32,7 +32,7 @@ PCamera::initCamera(float heading, float pitch, float fov)
 	fCameraMode = CAM_MODE_MANUAL;
 	fTimeFactor = 1.0;
 	SetCamera(heading, pitch, fov);
-	startThread();	
+	startThread();
 }
 
 void
@@ -43,7 +43,7 @@ PCamera::SetCamera(float heading, float pitch, float fov)
 	fPitch = pitch;
 	fFOV = fov;
 	release_sem(fCamLocker);
-	recalcCamera();	
+	recalcCamera();
 }
 
 
@@ -51,7 +51,7 @@ float
 PCamera::SetHeading(float heading)
 {
 	acquire_sem(fCamLocker);
-	fHeading = heading;	
+	fHeading = heading;
 	release_sem(fCamLocker);
 	recalcCamera();
 	return fHeading;
@@ -84,7 +84,7 @@ float
 PCamera::MoveHeadingBy(float dheading)
 {
 	acquire_sem(fCamLocker);
-	fHeading += dheading;	
+	fHeading += dheading;
 	release_sem(fCamLocker);
 	recalcCamera();
 	return fHeading;
@@ -110,7 +110,8 @@ PCamera::MoveFOVBy(float dfov)
 	release_sem(fCamLocker);
 	recalcCamera();
 	return fFOV;
-}		
+}
+
 
 float
 PCamera::Heading(void)
@@ -147,6 +148,7 @@ PCamera::Mode(void)
 	return fCameraMode;
 }
 
+
 void
 PCamera::GetCoeffs(CameraCoeffs *coeffs)
 {
@@ -154,6 +156,7 @@ PCamera::GetCoeffs(CameraCoeffs *coeffs)
 	memcpy(coeffs, &fCoeffs, sizeof(CameraCoeffs));
 	release_sem(fCamLocker);
 }
+
 
 void
 PCamera::recalcCamera(void)

@@ -137,9 +137,9 @@ PRender::RenderSegment(int32 from, int32 to)
 	uint32	pixelShift;
 
 	float	rayY;
-	float	rayYY;			
+	float	rayYY;		
 	float 	fx, fy;
-	float 	rayX,rayZ;		
+	float 	rayX,rayZ;
 	float 	fx_camX;
 	float	dfx_camX;
 	float 	fx_camZ;
@@ -176,9 +176,9 @@ PRender::Render(void)
 	fCamera->GetCoeffs(&fCamCoeffs);
 	if(threadsCount == 1)
 		RenderSegment(0, frameHeight - 1);
-	else {		
+	else {
 		for(int i = 0; i < threadsCount; i++ )
-			release_sem(renderThreads[i].threadLocker);			
-		acquire_sem_etc(readyLocker, threadsCount, 0, 0);		
+			release_sem(renderThreads[i].threadLocker);		
+		acquire_sem_etc(readyLocker, threadsCount, 0, 0);
 	}
 }

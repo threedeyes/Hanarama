@@ -27,7 +27,7 @@ FmRecalcTables(float width, float height)
 		int32 y = (int32)((acos(x) * height) / M_PI) * (int32)width;
 		ACOS_TABLE[i] = y;
 	}
-	
+
 	for (int i = 0; i <= ATAN2_TABLE_SIZE; i++) {
 		float f = (float)i / ATAN2_TABLE_SIZE;
 		
