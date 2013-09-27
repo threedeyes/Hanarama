@@ -3,6 +3,7 @@
 
 #include <SupportDefs.h>
 #include <Bitmap.h>
+#include <Cursor.h>
 #include <View.h>
 #include <Rect.h>
 #include <Path.h>
@@ -40,6 +41,8 @@ class FBView : public BView
 		float	mouseDownPosLastY;
 		float 	cam_fov_speed;		
 		float 	time;
+		
+		BCursor *fMoveCursor;
 public:		
 		BPath 	filename;
 };

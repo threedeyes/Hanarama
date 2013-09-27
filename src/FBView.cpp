@@ -29,6 +29,8 @@ FBView::FBView(BRect rect, int width, int height, BPath path) :
 	BRect	fbRect = BRect(0,0,buffer_width-1,buffer_height-1);	
 	bufferBitmap = new BBitmap(fbRect, B_RGB32, true);	
 
+	fMoveCursor = new BCursor(B_CURSOR_ID_MOVE);
+	
 	mouseIsDown = false;
 	mouseDownPosLastX=0;
 	mouseDownPosLastY=0;	
@@ -37,7 +39,7 @@ FBView::FBView(BRect rect, int width, int height, BPath path) :
 
 FBView::~FBView()
 {
-	
+	delete fMoveCursor;
 }
 
 void 
@@ -108,6 +110,8 @@ FBView::MouseDown(BPoint p)
 		mouseIsDown=true;
 		mouseDownPosLastX=p.x;
 		mouseDownPosLastY=p.y;
+		
+		be_app->SetCursor(fMoveCursor, true);
 		SetMouseEventMask(B_POINTER_EVENTS,B_NO_POINTER_HISTORY);
 	}
 }
@@ -116,8 +120,10 @@ void
 FBView::MouseUp(BPoint p)
 {
 	if(fCam!=NULL)
-	if(fCam->Mode()==CAM_MODE_MANUAL)
+	if(fCam->Mode()==CAM_MODE_MANUAL) {
+		be_app->SetCursor(B_CURSOR_SYSTEM_DEFAULT, true);
 		mouseIsDown=false;
+	}
 }
 
 void
