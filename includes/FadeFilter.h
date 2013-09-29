@@ -19,7 +19,8 @@ class PFadeFilter : public PFilter
 {
  public:
 			PFadeFilter(BBitmap *bitmap);
-			PFadeFilter(uint32 *buffer, uint32 size, uint32 width, uint32 height);
+			PFadeFilter(uint32 *buffer, uint32 size,
+				uint32 width, uint32 height);
 			~PFadeFilter();
 	void	Apply(void);
 	void	SetFade(uint8 fade);

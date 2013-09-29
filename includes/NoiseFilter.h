@@ -19,7 +19,8 @@ class PNoiseFilter : public PFilter
 {
  public:
 			PNoiseFilter(BBitmap *bitmap);
-			PNoiseFilter(uint32 *buffer, uint32 size, uint32 width, uint32 height);
+			PNoiseFilter(uint32 *buffer, uint32 size,
+				uint32 width, uint32 height);
 			~PNoiseFilter();
 	void	Apply(void);
 	void	SetDispersion(uint8 disp);

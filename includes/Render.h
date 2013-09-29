@@ -36,7 +36,8 @@ class PRender
  public:
 			PRender();
 			PRender(BBitmap *src, BBitmap *dst, PCamera *camera);
-			PRender(BBitmap *src, uint32 *dst_buffer, int32 w, int32 h, PCamera *camera);
+			PRender(BBitmap *src, uint32 *dst_buffer,
+				int32 width, int32 height, PCamera *camera);
 			~PRender();
 	
 	void	SetPanoramaBitmap(BBitmap *bitmap);

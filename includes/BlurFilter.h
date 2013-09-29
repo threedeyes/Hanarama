@@ -19,7 +19,8 @@ class PBlurFilter : public PFilter
 {
  public:
 			PBlurFilter(BBitmap *bitmap);
-			PBlurFilter(uint32 *buffer, uint32 size, uint32 width, uint32 height);
+			PBlurFilter(uint32 *buffer, uint32 size,
+				uint32 width, uint32 height);
 			~PBlurFilter();
 	void	Apply(void);
 };

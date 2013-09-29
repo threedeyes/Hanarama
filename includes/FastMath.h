@@ -66,7 +66,8 @@ FmAtan2(float y, float x)
 inline	int32
 FmAcos(float x)
 {
-	return ACOS_TABLE[ (int32)(x*ACOS_TABLE_SIZE_HALF)+(int32)ACOS_TABLE_SIZE_HALF];
+	return ACOS_TABLE[ (int32)(x*ACOS_TABLE_SIZE_HALF)
+		+ (int32)ACOS_TABLE_SIZE_HALF ];
 }
 
 
@@ -78,7 +79,6 @@ FmRsqrt(float x)
   i = 0x5f375a86 - (i>>1);
   x = *(float*)&i;
   x = x * (1.5f - xhalf * x * x);
- // x = x * (1.5f - xhalf * x * x);
   return x;	
 }
 
@@ -98,8 +98,8 @@ FmRsqrtPrec(float x)
 
 inline int FMRand()
 {
-  FM_RND_SEED = (214013*FM_RND_SEED+2531011);
-  return (FM_RND_SEED>>16)&0x7FFF;
+  FM_RND_SEED = (214013 * FM_RND_SEED + 2531011);
+  return (FM_RND_SEED >> 16) & 0x7FFF;
 } 
 
 

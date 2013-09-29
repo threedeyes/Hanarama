@@ -19,10 +19,12 @@ class PFilter
 {
  public:
 				PFilter(BBitmap *bitmap);
-				PFilter(uint32 *buffer, uint32 size, uint32 width, uint32 height);
+				PFilter(uint32 *buffer, uint32 size,
+					uint32 width, uint32 height);
 				~PFilter();
 		void	Init(BBitmap *bitmap);
-		void	Init(uint32 *buffer, uint32 size, uint32 width, uint32 height);
+		void	Init(uint32 *buffer, uint32 size,
+					uint32 width, uint32 height);
 virtual void	Apply(void);
 
  protected:
