@@ -49,4 +49,3 @@ $(OBJDIR)/%.o : src/%.cpp
 $(OBJDIR)/%.o : src/%.asm
 	@mkdir -p $(OBJDIR)
 	$(ASM) -f elf $< -o $@
-
