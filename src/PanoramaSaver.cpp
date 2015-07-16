@@ -18,6 +18,7 @@
 #include "NoiseFilter.h"
 
 PCamera *fCam = NULL;
+bool DIE = false;
 
 extern "C" _EXPORT BScreenSaver *instantiate_screen_saver(BMessage *message, image_id image)
 {
@@ -74,7 +75,11 @@ int32 renderer(void *data)
 	FBView *view = (FBView*)data;
 	
   	BBitmap *dstBmp = view->GetBitmap();
-	BBitmap *srcBmp = BTranslationUtils::GetBitmapFile("/boot/home/Project/Hanarama/samples/test.jpg");
+  	BBitmap *srcBmp;
+  	//if(view->Bounds().Width() < 256)
+		srcBmp = BTranslationUtils::GetBitmapFile("/HaikuData/Projects/Hanarama/samples/small.jpg");
+	//else
+	//	srcBmp = BTranslationUtils::GetBitmapFile("/HaikuData/Projects/Hanarama/samples/test.jpg");
 
 	PRender *render = new PRender(srcBmp, dstBmp, fCam);
 	
@@ -90,26 +95,33 @@ int32 renderer(void *data)
 	bigtime_t start = real_time_clock_usecs();
 	
   	for(;;) {
-		bigtime_t now = real_time_clock_usecs();
-  		bigtime_t cont = (now - start) / 1000;
-  		if(cont>3000)cont=3000;
-  		fader.SetFade(255 - (255 * cont)/3000);
+  		if(DIE)
+  			break;
+		//bigtime_t now = real_time_clock_usecs();
+  		//bigtime_t cont = (now - start) / 1000;
+  		//if(cont>3000)cont=3000;
+  		//fader.SetFade(255 - (255 * cont)/3000);
   		
     	render->Render();
-    	fader.Apply();
+    	//fader.Apply();
 		view->Paint();
   	}
+  	render->LeaveMultiRender();  	
   	return 0;
 }
 
 void PanoramaSaver::StopSaver(void)
 {
-	kill_thread(rendererThread);
+	status_t ret = 0;
+	DIE = true;
+	fCam->stopThread();
+	wait_for_thread(rendererThread, &ret);
 }
 
 status_t 
 PanoramaSaver::StartSaver(BView *view, bool preview)
 {	
+	DIE = false;
 	fCam = new PCamera();
 	fCam->SetMode(CAM_MODE_AUTO_PANNIG);
 	

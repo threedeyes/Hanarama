@@ -46,13 +46,7 @@ PRender::PRender(BBitmap *src, uint32 *dst_buffer, int32 w, int32 h, PCamera *ca
 
 PRender::~PRender()
 {
-	if(threadsCount > 1) {
-		for(int i = 0; i < threadsCount; i++)
-			kill_thread(renderThreads[i].threadId);
-		for(int i = 0; i < threadsCount; i++)
-			delete_sem(renderThreads[i].threadLocker);
-		delete_sem(readyLocker);
-	}
+	LeaveMultiRender();
 }
 
 	
@@ -129,6 +123,18 @@ PRender::InitMultiRenders(int32 threads)
 	snooze(100000);
 }
 
+
+void
+PRender::LeaveMultiRender(void)
+{
+	if(threadsCount > 1) {
+		for(int i = 0; i < threadsCount; i++)
+			kill_thread(renderThreads[i].threadId);
+		for(int i = 0; i < threadsCount; i++)
+			delete_sem(renderThreads[i].threadLocker);
+		delete_sem(readyLocker);
+	}	
+}
 
 void
 PRender::RenderSegment(int32 from, int32 to)

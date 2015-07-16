@@ -59,14 +59,15 @@ class PCamera
 		int		Mode(void);
 		
 		void	GetCoeffs(CameraCoeffs *coeffs);
+
+	 	void	startThread(void);
+	 	void	stopThread(void);
 	
  private:
 	 	void	initCamera(float heading, float pitch, float fov);
 		void	recalcCamera(void);
 
  static	int32 	AutoCamThread(void *data);
-	 	void	startThread(void);
-	 	void	stopThread(void);
 
 	 	
 	 	float	fHeading;
