@@ -11,10 +11,11 @@ class PanoramaSaver : public BScreenSaver, public BHandler
 {
 public:
 						PanoramaSaver(BMessage *message, image_id id);
-			virtual		~PanoramaSaver();				
-			void		StartConfig(BView *view);
-			status_t	StartSaver(BView *v, bool preview);
-			void		Draw(BView *v, int32 frame);
+	virtual				~PanoramaSaver();				
+	virtual void 		StartConfig(BView *view);
+	status_t 			StartSaver(BView *v, bool preview);
+	virtual	void 		StopSaver();
+	virtual void		Draw(BView *v, int32 frame);
 	virtual	status_t	SaveState(BMessage* into) const;
 	virtual	void		MessageReceived(BMessage* message);
 private:

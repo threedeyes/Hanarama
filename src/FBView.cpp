@@ -35,6 +35,8 @@ FBView::FBView(BRect rect, int width, int height, BPath path) :
 	mouseDownPosLastX=0;
 	mouseDownPosLastY=0;	
 	time=-12;
+	memset(bufferBitmap, bufferBitmap->BitsLength(), 0);
+	SetViewColor(0,0,0);
 }
 
 FBView::~FBView()

@@ -19,12 +19,13 @@ RSRCS := res/HanaramaViewer.rsrc
 
 OBJS	:= $(addprefix $(OBJDIR)/,$(OBJS))
 
-CC := clang
+CC := gcc
 ASM := yasm
 LD := $(CC)
 
-LIBS := -lroot -lbe -lstdc++ -ltranslation
-CFLAGS := -O3 -ffast-math -msse -msse2 -mmmx -I./includes
+LIBS := -lroot -lbe -lstdc++.r4 -ltranslation
+CFLAGS := -O3 -ffast-math -I./includes
+#-msse -msse2 -mmmx 
 LDFLAGS := 
 
 .PHONY : clean build

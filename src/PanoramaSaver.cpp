@@ -7,11 +7,15 @@
 #include <Bitmap.h>
 #include <Screen.h>
 #include <stdio.h>
-#include <time.h>
+#include <sys/time.h>
 
 #include "Camera.h"
 #include "Render.h"
 #include "PanoramaSaver.h"
+
+#include "FadeFilter.h"
+#include "BlurFilter.h"
+#include "NoiseFilter.h"
 
 PCamera *fCam = NULL;
 
@@ -67,21 +71,41 @@ PanoramaSaver::MessageReceived(BMessage* message)
 
 int32 renderer(void *data)
 {
-	FBView *view = (FBView*)data;	
+	FBView *view = (FBView*)data;
 	
   	BBitmap *dstBmp = view->GetBitmap();
-	BBitmap *srcBmp = BTranslationUtils::GetBitmapFile("/Storage/pano/Samples/01.jpg");
+	BBitmap *srcBmp = BTranslationUtils::GetBitmapFile("/boot/home/Project/Hanarama/samples/test.jpg");
 
 	PRender *render = new PRender(srcBmp, dstBmp, fCam);
-	render->InitMultiRenders(2);
-	  	
-  	for(;;) {    	
-    	render->Render();    	
+	
+	PFadeFilter fader(dstBmp);
+	PBlurFilter blurer(dstBmp);
+	PNoiseFilter noise(dstBmp);
+		
+	fader.SetFade(255);
+  	noise.SetDispersion(50);
+  	
+	render->InitMultiRenders(1);
+		
+	bigtime_t start = real_time_clock_usecs();
+	
+  	for(;;) {
+		bigtime_t now = real_time_clock_usecs();
+  		bigtime_t cont = (now - start) / 1000;
+  		if(cont>3000)cont=3000;
+  		fader.SetFade(255 - (255 * cont)/3000);
+  		
+    	render->Render();
+    	fader.Apply();
 		view->Paint();
   	}
   	return 0;
 }
 
+void PanoramaSaver::StopSaver(void)
+{
+	kill_thread(rendererThread);
+}
 
 status_t 
 PanoramaSaver::StartSaver(BView *view, bool preview)
