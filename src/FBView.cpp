@@ -12,20 +12,22 @@
 
 extern PCamera *fCam;
 
-FBView::FBView(BRect rect, BPath path) : 
+FBView::FBView(BRect rect, bool preview) :
 	BView(rect, "FBView", B_FOLLOW_ALL, B_WILL_DRAW|B_PULSE_NEEDED|B_FRAME_EVENTS)
 {
-	FBView(rect, rect.IntegerWidth(), rect.IntegerHeight(), path);
+	FBView(rect, rect.IntegerWidth(), rect.IntegerHeight(), preview);
 }
 
-FBView::FBView(BRect rect, int width, int height, BPath path) : 
+FBView::FBView(BRect rect, int width, int height, bool preview) :
 	BView(rect, "FBView", B_FOLLOW_ALL, B_WILL_DRAW|B_PULSE_NEEDED|B_FRAME_EVENTS)
 {
 	buffer_width = width;
 	buffer_height = height;
 	
-	filename = path;
-	
+	fOSDText.SetTo("");
+
+	fPreview = preview;
+
 	BRect	fbRect = BRect(0,0,buffer_width-1,buffer_height-1);	
 	bufferBitmap = new BBitmap(fbRect, B_RGB32, true);	
 
@@ -51,6 +53,10 @@ FBView::Paint()
  	 //bufferView->LockLooper();
  	 SetDrawingMode(B_OP_COPY);
 	 DrawBitmap(bufferBitmap, bufferBitmap->Bounds(), Bounds(), B_FILTER_BITMAP_BILINEAR|B_WAIT_FOR_RETRACE);
+	 if(fOSDText.Length()>0) {
+	 	SetDrawingMode(B_OP_BLEND);
+	 	DrawString(fOSDText.String(), BPoint(10,20));
+	 }
 	 //bufferView->UnlockLooper();
 	 UnlockLooper();
 	}
@@ -90,6 +96,12 @@ int
 FBView::Height()
 {
 	return buffer_height;
+}
+
+void
+FBView::SetOSD(const char*osd)
+{
+	fOSDText.SetTo(osd);
 }
 
 void 

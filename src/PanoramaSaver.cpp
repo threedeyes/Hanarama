@@ -1,5 +1,6 @@
 #include <StringView.h>
 #include <TranslationUtils.h>
+#include <ScreenSaver.h>
 #include <Slider.h>
 #include <stdlib.h>
 #include <View.h>
@@ -17,8 +18,11 @@
 #include "BlurFilter.h"
 #include "NoiseFilter.h"
 
+namespace BPrivate {
+	void BuildScreenSaverDefaultSettingsView(BView* view, const char* moduleName, const char* info);
+}
+
 PCamera *fCam = NULL;
-bool DIE = false;
 
 extern "C" _EXPORT BScreenSaver *instantiate_screen_saver(BMessage *message, image_id image)
 {
@@ -39,21 +43,8 @@ PanoramaSaver::~PanoramaSaver()
 
 void PanoramaSaver::StartConfig(BView *view)
 {
-	BRect bounds = view->Bounds();
-	bounds.InsetBy(10.0, 10.0);
-	BRect frame(0.0, 0.0, bounds.Width(), bounds.Height());
-
-	if (BWindow* window = view->Window())
-		window->AddHandler(this);
-
-	tView = new BStringView(frame, B_EMPTY_STRING, "Hanarama ScreenSaver");
-	tView->SetFont(be_bold_font);
-	tView->SetFontSize(15);
-	view->AddChild(tView);
-	tView->ResizeToPreferred();
-	frame.top = tView->Frame().bottom+15;
-	view->AddChild(new BStringView(frame, B_EMPTY_STRING, " Ver 0.1, (c) 2013 3dEyes**"));
-	
+	BPrivate::BuildScreenSaverDefaultSettingsView(view, "Hanarama 360",
+		"(c) 2013-2015 Gerasim Troeglazov");
 }
 
 
@@ -69,17 +60,28 @@ PanoramaSaver::MessageReceived(BMessage* message)
 {
 }
 
+float getTime(void)
+{
+	return system_time()/1000000.0;
+}
+
+bool DIE = false;
 
 int32 renderer(void *data)
 {
+	float delay = 0;
+	int counter=0;
+	char temp[16];
+	float _starttime, _lasttime;
+
 	FBView *view = (FBView*)data;
 	
   	BBitmap *dstBmp = view->GetBitmap();
   	BBitmap *srcBmp;
-  	//if(view->Bounds().Width() < 256)
-		srcBmp = BTranslationUtils::GetBitmapFile("/HaikuData/Projects/Hanarama/samples/small.jpg");
-	//else
-	//	srcBmp = BTranslationUtils::GetBitmapFile("/HaikuData/Projects/Hanarama/samples/test.jpg");
+	if(view->fPreview)
+		srcBmp = BTranslationUtils::GetBitmapFile("/boot/home/Project/Hanarama/samples/small.jpg");
+	else
+		srcBmp = BTranslationUtils::GetBitmapFile("/boot/home/Project/Hanarama/samples/test.jpg");
 
 	PRender *render = new PRender(srcBmp, dstBmp, fCam);
 	
@@ -90,21 +92,49 @@ int32 renderer(void *data)
 	fader.SetFade(255);
   	noise.SetDispersion(50);
   	
-	render->InitMultiRenders(1);
+	render->InitMultiRenders(2);
 		
-	bigtime_t start = real_time_clock_usecs();
-	
-  	for(;;) {
-  		if(DIE)
-  			break;
-		//bigtime_t now = real_time_clock_usecs();
-  		//bigtime_t cont = (now - start) / 1000;
-  		//if(cont>3000)cont=3000;
-  		//fader.SetFade(255 - (255 * cont)/3000);
-  		
-    	render->Render();
-    	//fader.Apply();
-		view->Paint();
+	float time;
+	float fps_limit = 30.0;
+
+	_starttime = _lasttime = getTime();
+
+  	for(;!DIE;counter++) {
+		if(!DIE)
+			render->Render();
+		if(!DIE)
+			fader.Apply();
+    	//noise.Apply();
+		if(!DIE)
+			view->Paint();
+
+		time = getTime();
+		if(time - _lasttime > 1.0) {
+			float fps = 1.0/((time - _lasttime)/counter);
+			_lasttime = time;
+			int fps_int = (int)fps;
+			if(fps_int<0)fps_int=0;
+
+			float znooze_frame = ((1/fps_limit) - (1/fps)) * 1000000;		
+
+			if(znooze_frame > 0)
+				delay = znooze_frame;
+
+			//sprintf(temp,"FPS: %d %d",(int)fps_int, (int)delay);
+			//view->SetOSD(temp);			
+			counter = -1;
+		}
+		
+		if(time - _starttime <= 3.0) {
+			int fade = ((time - _starttime)*255) / 3.0;
+			if(fade>255)
+				fade=255;
+  			fader.SetFade(255 - fade);
+		}
+
+		
+		if(delay>0 && delay < 1000000)
+			snooze((int)delay);
   	}
   	render->LeaveMultiRender();  	
   	return 0;
@@ -113,8 +143,8 @@ int32 renderer(void *data)
 void PanoramaSaver::StopSaver(void)
 {
 	status_t ret = 0;
-	DIE = true;
 	fCam->stopThread();
+	DIE = true;
 	wait_for_thread(rendererThread, &ret);
 }
 
@@ -125,7 +155,11 @@ PanoramaSaver::StartSaver(BView *view, bool preview)
 	fCam = new PCamera();
 	fCam->SetMode(CAM_MODE_AUTO_PANNIG);
 	
-	frameBuffer = new FBView(view->Bounds(), (view->Bounds().Width() + 1) / 2, (view->Bounds().Height() + 1) / 2, BPath());
+	if(preview) {
+		frameBuffer = new FBView(view->Bounds(), view->Bounds().Width(), view->Bounds().Height(), preview);
+	} else {
+		frameBuffer = new FBView(view->Bounds(), (view->Bounds().Width() + 1) / 2, (view->Bounds().Height() + 1) / 2, preview);
+	}
 	view->AddChild(frameBuffer);
 	
 	rendererThread = spawn_thread(renderer,"rendererThread", B_DISPLAY_PRIORITY, (void*)frameBuffer);

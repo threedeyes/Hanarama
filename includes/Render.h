@@ -13,6 +13,7 @@
 #include <string.h>
 #include <OS.h>
 #include <Bitmap.h>
+#include <String.h>
 #include <View.h>
 #include <OS.h>
 
@@ -67,7 +68,6 @@ class PRender
 	
 	int32				threadsCount;
 	RenderThreadInfo	renderThreads[MAX_RENDER_THREADS];
-
 public:
 	sem_id				readyLocker;
 };

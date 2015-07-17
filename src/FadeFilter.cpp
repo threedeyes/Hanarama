@@ -30,6 +30,8 @@ PFadeFilter::~PFadeFilter()
 void
 PFadeFilter::Apply(void)
 {
+	if(fFade==0)
+		return;
 	shade_asm(fBuffer, fSize, fFade);
 }
 

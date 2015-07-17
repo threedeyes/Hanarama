@@ -4,6 +4,7 @@
 #include <SupportDefs.h>
 #include <Bitmap.h>
 #include <Cursor.h>
+#include <String.h>
 #include <View.h>
 #include <Rect.h>
 #include <Path.h>
@@ -11,8 +12,8 @@
 class FBView : public BView 
 {
  public:
-		FBView(BRect rect, BPath path);
-		FBView(BRect rect, int width, int height, BPath path);
+		FBView(BRect rect, bool preview);
+		FBView(BRect rect, int width, int height, bool preview);
 		~FBView();			
 		
 		void 	Paint();
@@ -22,6 +23,9 @@ class FBView : public BView
 		
 		int		Width();
 		int		Height();
+
+		void	SetOSD(const char *str);
+
  private:
  		int		buffer_width;
  		int		buffer_height;
@@ -44,7 +48,8 @@ class FBView : public BView
 		
 		BCursor *fMoveCursor;
 public:		
-		BPath 	filename;
+		bool fPreview;
+		BString	fOSDText;
 };
 
 #endif

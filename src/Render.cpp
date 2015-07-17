@@ -13,7 +13,7 @@ PRender::PRender()
 	fFrameBufferBitmap = NULL;
 	fCamera = NULL;
 	frameWidth = 0;
-	frameHeight = 0;	
+	frameHeight = 0;
 	threadsCount = 1;
 }
 
@@ -78,6 +78,7 @@ PRender::SetCamera(PCamera *camera)
 {
 	fCamera = camera;
 }
+
 
 int32 
 MultiRenderThread(void *data)

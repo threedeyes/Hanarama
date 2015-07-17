@@ -1,4 +1,4 @@
-BINARY := build/HanaramaSaver
+BINARY := "build/Hanarama 360"
 
 OBJS := Camera.o \
 		FastMath.o \
