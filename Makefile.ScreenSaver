@@ -13,8 +13,6 @@ OBJS := Camera.o \
 		
 OBJDIR := build
 
-RSRCS := res/HanaramaViewer.rsrc
-
 OBJS	:= $(addprefix $(OBJDIR)/,$(OBJS))
 
 CC := gcc
@@ -34,7 +32,8 @@ build : $(BINARY)
 	
 $(BINARY) : $(OBJDIR) $(OBJS) $(RSRCS)
 	$(LD) -nostart -Xlinker -soname=$(BINARY) $(CFLAGS) $(LIBS) $(OBJS) -o $(BINARY) $(LDFLAGS)
-	xres -o $(BINARY) $(RSRCS)
+	rc res/HanaramaSaver.rdef
+	xres -o $(BINARY) res/HanaramaSaver.rsrc
 	mimeset -f $(BINARY)
 
 clean:
