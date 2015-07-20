@@ -21,13 +21,18 @@
 #include "FadeFilter.h"
 #include "BlurFilter.h"
 #include "NoiseFilter.h"
+#include "SepiaFilter.h"
+#include "FilmFilter.h"
 
 int32			fFPSLimit;
 int32			fCPULimit;
 int32			fQuality;
 int32			fNoiseLevel;
 BPath			fFilename;
-PRender 		*fRender;
+
+PRender 		*fRender = NULL;
+BBitmap			*fSrcBitmap = NULL;
+BBitmap			*fDstBitmap = NULL;
 
 class SimpleSlider : public BSlider {
 public:
@@ -181,6 +186,11 @@ PanoramaSaver::PanoramaSaver(BMessage *message, image_id image)
 		else
 			fFilename.SetTo(filename);
 	}
+
+	image_info the_info;
+	status_t retval = get_image_info(image, &the_info);
+    fSaverRes = new BResources;
+    retval = fSaverRes->SetTo(new BFile( the_info.name, O_RDONLY));
 }
 
 PanoramaSaver::~PanoramaSaver()
@@ -229,26 +239,22 @@ int32 renderer(void *data)
 	char temp[16];
 	float _starttime, _lasttime;
 
-	FBView *view = (FBView*)data;
-	
-  	BBitmap *dstBmp = view->GetBitmap();
-  	BBitmap *srcBmp;
-	//if(view->fPreview)
-		//srcBmp = BTranslationUtils::GetBitmap(B_JPEG_FORMAT, "default.jpg");
-		 srcBmp = BTranslationUtils::GetBitmapFile("/HaikuData/Projects/Hanarama/samples/test.jpg");
-	//else
-		//srcBmp = BTranslationUtils::GetBitmapFile("/HaikuData/Projects/Hanarama/samples/test.jpg");
+	FBView *view = (FBView*)data;	
+  	fDstBitmap = view->GetBitmap();
 
-	fRender = new PRender(srcBmp, dstBmp, fCam);
+	fRender = new PRender(fSrcBitmap, fDstBitmap, fCam);
 	
-	PFadeFilter fader(dstBmp);
-	PBlurFilter blurer(dstBmp);
-	PNoiseFilter noise(dstBmp);
+	PFadeFilter fader(fDstBitmap);
+	PBlurFilter blurer(fDstBitmap);
+	PNoiseFilter noise(fDstBitmap);
+	PSepiaFilter sepia(fDstBitmap);
+	PFilmFilter film(fDstBitmap);
 		
 	fader.SetFade(255);
 
 	int lastDispersion = fNoiseLevel;
   	noise.SetDispersion(fNoiseLevel);
+  	sepia.SetDepth(fNoiseLevel);
   	
 	fRender->InitMultiRenders(fCPULimit);
 		
@@ -261,9 +267,12 @@ int32 renderer(void *data)
 		fader.Apply();
     	if(fNoiseLevel>0) {
     		if(fNoiseLevel != lastDispersion) {
-    			noise.SetDispersion(fNoiseLevel);
+    			//noise.SetDispersion(fNoiseLevel);
+    			sepia.SetDepth(fNoiseLevel);
     			lastDispersion = fNoiseLevel;
     		}
+    		sepia.Apply();
+    		film.Apply();
     		noise.Apply();
     	}
 		view->Paint();
@@ -306,11 +315,25 @@ void PanoramaSaver::StopSaver(void)
 	fCam->stopThread();
 	fRender->LeaveMultiRender();
 	kill_thread(rendererThread);
+
+	if(fSrcBitmap!=NULL) {
+		delete fSrcBitmap;
+		fSrcBitmap = NULL;
+	}
 }
 
 status_t 
 PanoramaSaver::StartSaver(BView *view, bool preview)
 {	
+//	fSrcBitmap = BTranslationUtils::GetBitmapFile("/boot/home/Project/Hanarama/samples/test.jpg");
+//	if(fSrcBitmap == NULL)
+//		return B_ERROR;
+	size_t size = 0;	
+	const void *data = fSaverRes->LoadResource('JPEG',"default.jpg" ,&size);
+	BMemoryIO stream(data, size);
+	stream.Seek(0, SEEK_SET);
+	fSrcBitmap = BTranslationUtils::GetBitmap(&stream);
+
 	fCam = new PCamera();
 	fCam->SetMode(CAM_MODE_AUTO_PANNIG);
 	

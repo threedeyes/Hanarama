@@ -5,6 +5,8 @@
 #include <TextView.h>
 #include <Font.h>
 #include <CheckBox.h>
+#include <TranslationUtils.h>
+#include <Resources.h>
 
 #include "FBView.h"
 
@@ -30,4 +32,5 @@ public:
 private:
 	FBView			*frameBuffer;
 	thread_id 		rendererThread;
+	BResources		*fSaverRes;
 };

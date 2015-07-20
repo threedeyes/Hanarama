@@ -8,6 +8,8 @@ OBJS := Camera.o \
 		BlurFilter.o \
 		FadeFilter.o \
 		NoiseFilter.o \
+		SepiaFilter.o \
+		FilmFilter.o \
 		PanoramaSaver.o \
 		Routunes.o
 		
