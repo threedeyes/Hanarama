@@ -2,6 +2,7 @@
 #include <InterfaceKit.h>
 #include <LayoutBuilder.h>
 #include <StringView.h>
+#include <TabView.h>
 #include <TranslationUtils.h>
 #include <TranslatorFormats.h>
 #include <ScreenSaver.h>
@@ -29,6 +30,8 @@ int32			fCPULimit;
 int32			fQuality;
 int32			fNoiseLevel;
 BPath			fFilename;
+
+float 			fLastDelay = 0;
 
 PRender 		*fRender = NULL;
 BBitmap			*fSrcBitmap = NULL;
@@ -61,9 +64,9 @@ private:
 	const char* fLabel;
 };
 
-class SettingsView : public BView {
+class PerformanceView : public BView {
 public:
-								SettingsView(BRect frame);
+								PerformanceView(BRect rect, const char *name);
 
 	virtual	void				AttachedToWindow();
 	virtual	void				MessageReceived(BMessage* message);
@@ -76,16 +79,10 @@ public:
 };
 
 
-SettingsView::SettingsView(BRect frame)
+PerformanceView::PerformanceView(BRect rect, const char *name)
 	:
-	BView(frame, "", B_FOLLOW_ALL, B_WILL_DRAW)
+	BView(rect, name, B_FOLLOW_ALL, B_WILL_DRAW)
 {
-	BStringView* titleString = new BStringView(B_EMPTY_STRING, "Hanarama 360");
-	titleString->SetFont(be_bold_font);
-
-	BStringView* copyrightString = new BStringView(B_EMPTY_STRING,
-		"© 2013-2015 Gerasim Troeglazov");
-
 	fFPSSlider = new SimpleSlider("FPS Limit", 1, 120, new BMessage(MSG_SET_FPS_LIMIT));
 	fFPSSlider->SetValue(fFPSLimit);
 
@@ -102,9 +99,7 @@ SettingsView::SettingsView(BRect frame)
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
 		.SetInsets(B_USE_HALF_ITEM_INSETS, B_USE_HALF_ITEM_INSETS,
 			B_USE_BIG_INSETS, B_USE_HALF_ITEM_INSETS)
-		.Add(titleString)
-		.Add(copyrightString)
-		.AddStrut(roundf(be_control_look->DefaultItemSpacing() / 2))
+		//.AddStrut(roundf(be_control_look->DefaultItemSpacing() / 10))
 		.AddGlue()
 		.Add(fFPSSlider)
 		.AddGlue()
@@ -116,12 +111,12 @@ SettingsView::SettingsView(BRect frame)
 		.AddGlue()
 	.End();
 
-	MoveBy(0, -25); // The view is not where it should be.
+	MoveBy(0, -25);
 }
 
 
 void
-SettingsView::AttachedToWindow()
+PerformanceView::AttachedToWindow()
 {
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	fFPSSlider->SetTarget(this);
@@ -132,11 +127,12 @@ SettingsView::AttachedToWindow()
 
 
 void
-SettingsView::MessageReceived(BMessage* message)
+PerformanceView::MessageReceived(BMessage* message)
 {
 	switch(message->what) {
 		case MSG_SET_FPS_LIMIT:
 			fFPSLimit = fFPSSlider->Value();
+			fLastDelay = 0;
 			break;
 
 		case MSG_SET_CPU_LIMIT:
@@ -153,11 +149,6 @@ SettingsView::MessageReceived(BMessage* message)
 	}
 }
 
-
-
-namespace BPrivate {
-	void BuildScreenSaverDefaultSettingsView(BView* view, const char* moduleName, const char* info);
-}
 
 PCamera *fCam = NULL;
 
@@ -202,7 +193,28 @@ PanoramaSaver::~PanoramaSaver()
 
 void PanoramaSaver::StartConfig(BView *view)
 {
-	view->AddChild(new SettingsView(view->Frame()));
+	BStringView* titleString = new BStringView(B_EMPTY_STRING, "Hanarama 360");
+	titleString->SetFont(be_bold_font);
+
+	BStringView* copyrightString = new BStringView(B_EMPTY_STRING,
+		"© 2013-2015 Gerasim Troeglazov");
+	
+	BTabView* tabView = new BTabView(view->Bounds(), B_EMPTY_STRING, B_WIDTH_FROM_LABEL);
+	PerformanceView *perfView = new PerformanceView(view->Bounds(), "Performance");
+	tabView->AddTab(perfView);
+//	view->AddChild(tabView);
+
+//	BLayoutBuilder::Group<>(view, B_VERTICAL)
+//		.SetInsets(B_USE_DEFAULT_SPACING)
+	BLayoutBuilder::Group<>(view, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
+		.SetInsets(B_USE_HALF_ITEM_INSETS, B_USE_HALF_ITEM_INSETS,
+			B_USE_BIG_INSETS, B_USE_HALF_ITEM_INSETS)
+		.Add(titleString)
+		.AddGlue()
+		.Add(copyrightString)
+		.AddGlue()
+		.Add(tabView)
+		.End();
 }
 
 
@@ -234,7 +246,6 @@ float getTime(void)
 
 int32 renderer(void *data)
 {
-	float delay = 0;
 	int counter=0;
 	char temp[16];
 	float _starttime, _lasttime;
@@ -273,7 +284,7 @@ int32 renderer(void *data)
     		}
     		sepia.Apply();
     		film.Apply();
-    		noise.Apply();
+    		//noise.Apply();
     	}
 		view->Paint();
 
@@ -284,13 +295,13 @@ int32 renderer(void *data)
 			int fps_int = (int)fps;
 			if(fps_int<0)fps_int=0;
 
-			float znooze_frame = ((1/(float)fFPSLimit) - ((1/fps) - (delay/1000000))) * 1000000;			
+			float znooze_frame = ((1/(float)fFPSLimit) - ((1/fps) - (fLastDelay/1000000))) * 1000000;			
 
 			if(znooze_frame > 0)
-				delay = znooze_frame;
+				fLastDelay = znooze_frame;
 
-			//sprintf(temp,"FPS: %d",(int)fps_int);
-			//view->SetOSD(temp);			
+			sprintf(temp,"FPS: %d",(int)fps_int);
+			view->SetOSD(temp);			
 			counter = -1;
 		}
 		
@@ -302,8 +313,8 @@ int32 renderer(void *data)
 		}
 
 		
-		if(delay>0 && delay < 1000000)
-			snooze((int)delay);
+		if(fLastDelay>0 && fLastDelay < 1000000)
+			snooze((int)fLastDelay);
   	}
   	fRender->LeaveMultiRender();
   	return 0;

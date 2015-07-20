@@ -34,10 +34,15 @@ PSepiaFilter::Apply(void)
 	uint8 *c1 = (uint8*)&color1;
 	uint8 *c2 = (uint8*)&color2;
 	
+	int p = (FMRand() % 20);
+	
 	for(uint32 i = 0 ; i < fSize; i++) {
 		color1 = fBuffer[i];
 		
 		int y = (c1[0] + c1[1] + c1[2] ) / 3;
+		y -= p;
+		if(y<0)y=0;
+		//if(y>255)y=255;
 		
 		int r = y + fDepth * 2;
 		int g = y + fDepth;
