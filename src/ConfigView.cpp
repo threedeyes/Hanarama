@@ -18,6 +18,7 @@
 #include <ListView.h>
 #include <ScrollView.h>
 #include <CheckBox.h>
+#include <Button.h>
 #include <Slider.h>
 #include <StringView.h>
 #include <View.h>
@@ -46,13 +47,26 @@ MainTabView::MainTabView(BRect rect, const char *name)
 	BStringView* titleString = new BStringView(B_EMPTY_STRING, "Hanarama 360");
 	titleString->SetFont(be_bold_font);
 
+	BButton* defaultButton = new BButton("default", "Default",
+		new BMessage('defl'),
+		B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE);
+
+	BButton* selectButton = new BButton("delect", "Select",
+		new BMessage('open'),
+		B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE);
+
 	BStringView* copyrightString = new BStringView(B_EMPTY_STRING,
 		"© 2013-2015 Gerasim Troeglazov");
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
 		.SetInsets(B_USE_DEFAULT_SPACING)
-		.Add(titleString)
-		.AddGlue()
+		.Add(titleString)		
 		.Add(copyrightString)
+		.AddGlue()
+		.AddGroup(B_HORIZONTAL, 0)
+			.Add(defaultButton)
+			.AddGlue()
+			.Add(selectButton)
+			.End()		
 		.End();
 }
 
