@@ -30,8 +30,19 @@
 int32			fFPSLimit;
 int32			fCPULimit;
 int32			fQuality;
-int32			fNoiseLevel;
+
 BPath			fFilename;
+
+bool			fNoiseEnabled;
+int32			fNoiseLevel;
+
+bool			fFilmEnabled;
+int32			fFilmLevel;
+
+bool			fSepiaEnabled;
+int32			fSepiaLevel;
+
+bool			fFPSEnabled;
 
 float 			fLastDelay = 0;
 
@@ -59,8 +70,20 @@ PanoramaSaver::PanoramaSaver(BMessage *message, image_id image)
 			fCPULimit = 1;
 		if (message->FindInt32("Quality", &fQuality) != B_OK)
 			fQuality = 100;
-		if (message->FindInt32("Noise level", &fNoiseLevel) != B_OK)
+		if (message->FindInt32("Noise Level", &fNoiseLevel) != B_OK)
 			fNoiseLevel = 0;
+		if (message->FindInt32("Film Level", &fFilmLevel) != B_OK)
+			fFilmLevel = 0;
+		if (message->FindInt32("Sepia Level", &fSepiaLevel) != B_OK)
+			fSepiaLevel = 0;
+		if (message->FindBool("Noise Enabled", &fNoiseEnabled) != B_OK)
+			fNoiseEnabled = false;
+		if (message->FindBool("Film Enabled", &fFilmEnabled) != B_OK)
+			fFilmEnabled = false;
+		if (message->FindBool("Sepia Enabled", &fSepiaEnabled) != B_OK)
+			fSepiaEnabled = false;
+		if (message->FindBool("FPS Enabled", &fFPSEnabled) != B_OK)
+			fFPSEnabled = false;				
 		const char *filename;
 		if (message->FindString("Filename", &filename) != B_OK)
 			fFilename.Unset();
@@ -98,7 +121,19 @@ PanoramaSaver::SaveState(BMessage* into) const
 		return status;
 	if ((status = into->AddInt32("Quality", fQuality)) != B_OK)
 		return status;
-	if ((status = into->AddInt32("Noise level", fNoiseLevel)) != B_OK)
+	if ((status = into->AddInt32("Noise Level", fNoiseLevel)) != B_OK)
+		return status;
+	if ((status = into->AddInt32("Film Level", fFilmLevel)) != B_OK)
+		return status;
+	if ((status = into->AddInt32("Sepia Level", fSepiaLevel)) != B_OK)
+		return status;
+	if ((status = into->AddBool("Noise Enabled", fNoiseEnabled)) != B_OK)
+		return status;
+	if ((status = into->AddBool("Film Enabled", fFilmEnabled)) != B_OK)
+		return status;
+	if ((status = into->AddBool("Sepia Enabled", fSepiaEnabled)) != B_OK)
+		return status;
+	if ((status = into->AddBool("FPS Enabled", fFPSEnabled)) != B_OK)
 		return status;
 	return B_OK;
 }
@@ -132,10 +167,6 @@ int32 renderer(void *data)
 	PFilmFilter film(fDstBitmap);
 		
 	fader.SetFade(255);
-
-	int lastDispersion = fNoiseLevel;
-  	noise.SetDispersion(fNoiseLevel);
-  	sepia.SetDepth(fNoiseLevel);
   	
 	fRender->InitMultiRenders(fCPULimit);
 		
@@ -145,17 +176,23 @@ int32 renderer(void *data)
 
   	for(;;counter++) {
 		fRender->Render();
-		fader.Apply();
-    	if(fNoiseLevel>0) {
-    		if(fNoiseLevel != lastDispersion) {
-    			//noise.SetDispersion(fNoiseLevel);
-    			sepia.SetDepth(fNoiseLevel);
-    			lastDispersion = fNoiseLevel;
-    		}
-    		sepia.Apply();
-    		film.Apply();
-    		//noise.Apply();
+		
+		if(!view->fPreview)
+			fader.Apply();
+
+    	if(fNoiseEnabled && fNoiseLevel > 0) {
+    			noise.SetDispersion(fNoiseLevel);
+   				noise.Apply();
     	}
+    	if(fFilmEnabled) {
+    			film.SetLevel(fFilmLevel);
+   				film.Apply();
+    	}
+    	if(fSepiaEnabled) {
+    			sepia.SetDepth(fSepiaLevel);
+   				sepia.Apply();
+    	}
+
 		view->Paint();
 
 		time = getTime();
@@ -169,9 +206,13 @@ int32 renderer(void *data)
 
 			if(znooze_frame > 0)
 				fLastDelay = znooze_frame;
-
-			sprintf(temp,"FPS: %d",(int)fps_int);
-			view->SetOSD(temp);			
+			
+			if(fFPSEnabled) {
+				sprintf(temp,"FPS: %d",(int)fps_int);
+				view->SetOSD(temp);
+			} else {
+				view->SetOSD("");
+			}
 			counter = -1;
 		}
 		

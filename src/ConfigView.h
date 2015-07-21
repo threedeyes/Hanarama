@@ -25,6 +25,7 @@ enum {
 	MSG_SET_QUALITY			= 'qual',
 	MSG_SET_NOISE_LEVEL		= 'nois',
 	MSG_SET_FILM_LEVEL		= 'film',
+	MSG_SET_SEPIA_LEVEL		= 'sepi',
 };
 
 
@@ -75,6 +76,7 @@ public:
 			BSlider*			fFPSSlider;
 			BSlider*			fCPUSlider;
 			BSlider*			fQualitySlider;
+			BCheckBox*			fFPSCheckBox;
 };
 
 class FXTabView : public BGroupView {
@@ -90,6 +92,9 @@ public:
 			
 			BCheckBox*			fFilmCheckBox;
 			BSlider*			fFilmSlider;
+
+			BCheckBox*			fSepiaCheckBox;
+			BSlider*			fSepiaSlider;
 };
 
 class ConfigView : public BView {

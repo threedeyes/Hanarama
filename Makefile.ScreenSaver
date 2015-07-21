@@ -41,6 +41,7 @@ $(BINARY) : $(OBJDIR) $(OBJS) $(RSRCS)
 
 clean:
 	rm -rf $(OBJDIR)/*.*
+	rm -rf res/HanaramaSaver.rsrc
 	rm -rf $(BINARY)
 
 $(OBJDIR)/%.o : src/%.cpp

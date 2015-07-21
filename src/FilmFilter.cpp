@@ -27,10 +27,11 @@ PFilmFilter::~PFilmFilter()
 void
 PFilmFilter::Apply(void)
 {
-	for(int j=0;j<15;j++) {
+	int levelReversed = 100 - fLevel;
+	for(int j=0;j < fLevel/8 ;j++) {
 		int x0 = FMRand() % fWidth;
 		int y0 = FMRand() % fHeight;
-		int len = FMRand() % (fWidth/25);
+		int len = FMRand() % (fWidth/(levelReversed/6 + 1));
 		for(int l=0;l<len;l++) {
 			fBuffer[y0*fWidth + x0] = 0x00ffffff;
 			int dx = 1 - FMRand() % 3;
@@ -39,10 +40,10 @@ PFilmFilter::Apply(void)
 			y0 = (y0+dy) % fHeight;
 		}
 	}
-	for(int j=0;j<120;j++) {
+	for(int j=0;j < fLevel/4;j++) {
 		int x0 = FMRand() % fWidth;
 		int y0 = FMRand() % fHeight;
-		int len = FMRand() % (fWidth/120);
+		int len = FMRand() % (fWidth/(levelReversed + 1));
 		for(int l=0;l<len;l++) {
 			fBuffer[y0*fWidth + x0] = 0x00ffffff;
 			int dx = 1 - FMRand() % 3;
@@ -52,7 +53,7 @@ PFilmFilter::Apply(void)
 		}
 	}
 	int lines = FMRand() % 100;
-	if(lines > 90) {
+	if(lines > 70 + levelReversed/3) {
 		int x0 = FMRand() % fWidth;
 		int y0 = FMRand() % fHeight;
 		int len = FMRand() % fHeight;

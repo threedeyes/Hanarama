@@ -25,12 +25,18 @@
 #include <TabView.h>
 #include <ControlLook.h>
 
-extern int32			fFPSLimit;
-extern int32			fCPULimit;
-extern int32			fQuality;
-extern int32			fNoiseLevel;
-extern BPath			fFilename;
-extern float 			fLastDelay;
+extern int32	fFPSLimit;
+extern int32	fCPULimit;
+extern int32	fQuality;
+extern bool		fNoiseEnabled;
+extern int32	fNoiseLevel;
+extern bool		fFilmEnabled;
+extern int32	fFilmLevel;
+extern bool		fSepiaEnabled;
+extern int32	fSepiaLevel;
+extern bool		fFPSEnabled;
+extern BPath	fFilename;
+extern float	fLastDelay;
 
 
 MainTabView::MainTabView(BRect rect, const char *name)
@@ -70,6 +76,9 @@ PerformanceTabView::PerformanceTabView(BRect rect, const char *name)
 
 	fQualitySlider = new SimpleSlider("Quality", 10, 100, new BMessage(MSG_SET_QUALITY));
 	fQualitySlider->SetValue(fQuality);
+	
+	fFPSCheckBox = new BCheckBox("fpsEnabled", "Show FPS", new BMessage(MSG_SET_FPS_LIMIT));
+	fFPSCheckBox->SetValue(fFPSEnabled);
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
 		.SetInsets(B_USE_HALF_ITEM_INSETS, B_USE_HALF_ITEM_INSETS,
@@ -78,6 +87,7 @@ PerformanceTabView::PerformanceTabView(BRect rect, const char *name)
 		.Add(fFPSSlider)
 		.Add(fCPUSlider)
 		.Add(fQualitySlider)
+		.Add(fFPSCheckBox)
 		.AddGlue();
 }
 
@@ -89,6 +99,7 @@ PerformanceTabView::AttachedToWindow()
 	fFPSSlider->SetTarget(this);
 	fCPUSlider->SetTarget(this);
 	fQualitySlider->SetTarget(this);
+	fFPSCheckBox->SetTarget(this);
 }
 
 
@@ -98,6 +109,7 @@ PerformanceTabView::MessageReceived(BMessage* message)
 	switch(message->what) {
 		case MSG_SET_FPS_LIMIT:
 			fFPSLimit = fFPSSlider->Value();
+			fFPSEnabled = fFPSCheckBox->Value() == B_CONTROL_ON;
 			fLastDelay = 0;
 			break;
 
@@ -119,17 +131,23 @@ FXTabView::FXTabView(BRect rect, const char *name)
 	:
 	BGroupView(name, B_VERTICAL, 0)
 {	
-	fNoiseCheckBox = new BCheckBox("noiseEnabled", "Noise", NULL);
-	fNoiseCheckBox->SetValue(0);
+	fNoiseCheckBox = new BCheckBox("noiseEnabled", "Noise", new BMessage(MSG_SET_NOISE_LEVEL));
+	fNoiseCheckBox->SetValue(fNoiseEnabled);
 		
 	fNoiseSlider = new SimpleSlider("Value", 0, 100, new BMessage(MSG_SET_NOISE_LEVEL));
 	fNoiseSlider->SetValue(fNoiseLevel);
 
-	fFilmCheckBox = new BCheckBox("filmEnabled", "Film effect", NULL);
-	fFilmCheckBox->SetValue(0);
+	fSepiaCheckBox = new BCheckBox("sepiaEnabled", "Sepia", new BMessage(MSG_SET_SEPIA_LEVEL));
+	fSepiaCheckBox->SetValue(fSepiaEnabled);
+	
+	fSepiaSlider = new SimpleSlider("Value", 0, 100, new BMessage(MSG_SET_SEPIA_LEVEL));
+	fSepiaSlider->SetValue(fSepiaLevel);	
+
+	fFilmCheckBox = new BCheckBox("filmEnabled", "Film effect", new BMessage(MSG_SET_FILM_LEVEL));
+	fFilmCheckBox->SetValue(fFilmEnabled);
 
 	fFilmSlider = new SimpleSlider("Value", 0, 100, new BMessage(MSG_SET_FILM_LEVEL));
-	fFilmSlider->SetValue(0);
+	fFilmSlider->SetValue(fFilmLevel);
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
 		.SetInsets(B_USE_HALF_ITEM_INSETS, B_USE_HALF_ITEM_INSETS,
@@ -137,10 +155,12 @@ FXTabView::FXTabView(BRect rect, const char *name)
 		.AddStrut(roundf(be_control_look->DefaultItemSpacing() / 2))
 		
 		.Add(BGridLayoutBuilder(B_USE_DEFAULT_SPACING, B_USE_HALF_ITEM_SPACING)
-			.Add(fNoiseCheckBox, 0, 0)
-			.Add(fNoiseSlider, 1, 0)
+			.Add(fSepiaCheckBox, 0, 0)
+			.Add(fSepiaSlider, 1, 0)	
 			.Add(fFilmCheckBox, 0, 1)
 			.Add(fFilmSlider, 1, 1)	
+			.Add(fNoiseCheckBox, 0, 2)
+			.Add(fNoiseSlider, 1, 2)
 		)
 		.AddGlue();
 }
@@ -151,6 +171,11 @@ FXTabView::AttachedToWindow()
 {
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	fNoiseSlider->SetTarget(this);
+	fNoiseCheckBox->SetTarget(this);
+	fSepiaSlider->SetTarget(this);
+	fSepiaCheckBox->SetTarget(this);
+	fFilmSlider->SetTarget(this);
+	fFilmCheckBox->SetTarget(this);
 }
 
 
@@ -159,7 +184,16 @@ FXTabView::MessageReceived(BMessage* message)
 {
 	switch(message->what) {
 		case MSG_SET_NOISE_LEVEL:
+			fNoiseEnabled = fNoiseCheckBox->Value() == B_CONTROL_ON;
 			fNoiseLevel = fNoiseSlider->Value();
+			break;
+		case MSG_SET_SEPIA_LEVEL:
+			fSepiaEnabled = fSepiaCheckBox->Value() == B_CONTROL_ON;
+			fSepiaLevel = fSepiaSlider->Value();
+			break;
+		case MSG_SET_FILM_LEVEL:
+			fFilmEnabled = fFilmCheckBox->Value() == B_CONTROL_ON;
+			fFilmLevel = fFilmSlider->Value();
 			break;
 		default:
 			BView::MessageReceived(message);		
