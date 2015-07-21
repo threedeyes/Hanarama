@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <sys/time.h>
 
+#include "ConfigView.h"
+
 #include "Camera.h"
 #include "Render.h"
 #include "PanoramaSaver.h"
@@ -36,118 +38,6 @@ float 			fLastDelay = 0;
 PRender 		*fRender = NULL;
 BBitmap			*fSrcBitmap = NULL;
 BBitmap			*fDstBitmap = NULL;
-
-class SimpleSlider : public BSlider {
-public:
-	SimpleSlider(const char* label, int32 min, int32 max, BMessage* message)
-		:
-		BSlider(B_EMPTY_STRING, B_EMPTY_STRING, message, min, max, B_HORIZONTAL)
-	{
-		BString minLabel;
-		minLabel << min;
-		BString maxLabel;
-		maxLabel << max;
-		SetLimitLabels(minLabel, maxLabel);
-		SetHashMarks(B_HASH_MARKS_BOTTOM);
-		SetHashMarkCount(11);
-		fLabel = label;
-	};
-
-	const char* UpdateText() const
-	{
-		fText.SetToFormat("%s: %d", fLabel, Value());
-		return fText.String();
-	};
-
-private:
-	mutable BString fText;
-	const char* fLabel;
-};
-
-class PerformanceView : public BView {
-public:
-								PerformanceView(BRect rect, const char *name);
-
-	virtual	void				AttachedToWindow();
-	virtual	void				MessageReceived(BMessage* message);
-
-	private:
-			BSlider*			fFPSSlider;
-			BSlider*			fCPUSlider;
-			BSlider*			fQualitySlider;
-			BSlider*			fNoiseSlider;
-};
-
-
-PerformanceView::PerformanceView(BRect rect, const char *name)
-	:
-	BView(rect, name, B_FOLLOW_ALL, B_WILL_DRAW)
-{
-	fFPSSlider = new SimpleSlider("FPS Limit", 1, 120, new BMessage(MSG_SET_FPS_LIMIT));
-	fFPSSlider->SetValue(fFPSLimit);
-
-	fCPUSlider = new SimpleSlider("Threads", 1, 32,	new BMessage(MSG_SET_CPU_LIMIT));
-	fCPUSlider->SetValue(fCPULimit);
-
-	fQualitySlider = new SimpleSlider("Quality", 10, 100, new BMessage(MSG_SET_QUALITY));
-	fQualitySlider->SetValue(fQuality);
-
-	fNoiseSlider = new SimpleSlider("Noise", 0, 100, new BMessage(MSG_SET_NOISE_LEVEL));
-	fNoiseSlider->SetValue(fNoiseLevel);
-
-
-	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
-		.SetInsets(B_USE_HALF_ITEM_INSETS, B_USE_HALF_ITEM_INSETS,
-			B_USE_BIG_INSETS, B_USE_HALF_ITEM_INSETS)
-		//.AddStrut(roundf(be_control_look->DefaultItemSpacing() / 10))
-		.AddGlue()
-		.Add(fFPSSlider)
-		.AddGlue()
-		.Add(fCPUSlider)
-		.AddGlue()
-		.Add(fQualitySlider)
-		.AddGlue()
-		.Add(fNoiseSlider)
-		.AddGlue()
-	.End();
-
-	MoveBy(0, -25);
-}
-
-
-void
-PerformanceView::AttachedToWindow()
-{
-	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
-	fFPSSlider->SetTarget(this);
-	fCPUSlider->SetTarget(this);
-	fQualitySlider->SetTarget(this);
-	fNoiseSlider->SetTarget(this);
-}
-
-
-void
-PerformanceView::MessageReceived(BMessage* message)
-{
-	switch(message->what) {
-		case MSG_SET_FPS_LIMIT:
-			fFPSLimit = fFPSSlider->Value();
-			fLastDelay = 0;
-			break;
-
-		case MSG_SET_CPU_LIMIT:
-			fCPULimit = fCPUSlider->Value();
-			break;
-
-		case MSG_SET_QUALITY:
-			fQuality = fQualitySlider->Value();
-			break;
-			
-		case MSG_SET_NOISE_LEVEL:
-			fNoiseLevel = fNoiseSlider->Value();
-			break;			
-	}
-}
 
 
 PCamera *fCam = NULL;
@@ -192,29 +82,9 @@ PanoramaSaver::~PanoramaSaver()
 }
 
 void PanoramaSaver::StartConfig(BView *view)
-{
-	BStringView* titleString = new BStringView(B_EMPTY_STRING, "Hanarama 360");
-	titleString->SetFont(be_bold_font);
-
-	BStringView* copyrightString = new BStringView(B_EMPTY_STRING,
-		"© 2013-2015 Gerasim Troeglazov");
-	
-	BTabView* tabView = new BTabView(view->Bounds(), B_EMPTY_STRING, B_WIDTH_FROM_LABEL);
-	PerformanceView *perfView = new PerformanceView(view->Bounds(), "Performance");
-	tabView->AddTab(perfView);
-//	view->AddChild(tabView);
-
-//	BLayoutBuilder::Group<>(view, B_VERTICAL)
-//		.SetInsets(B_USE_DEFAULT_SPACING)
-	BLayoutBuilder::Group<>(view, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
-		.SetInsets(B_USE_HALF_ITEM_INSETS, B_USE_HALF_ITEM_INSETS,
-			B_USE_BIG_INSETS, B_USE_HALF_ITEM_INSETS)
-		.Add(titleString)
-		.AddGlue()
-		.Add(copyrightString)
-		.AddGlue()
-		.Add(tabView)
-		.End();
+{	
+	ConfigView *fConfigView = new ConfigView(view->Bounds());
+	view->AddChild(fConfigView);	
 }
 
 
