@@ -24,7 +24,7 @@ ASM := yasm
 LD := $(CC)
 
 LIBS := -lroot -lbe -lstdc++.r4 -ltranslation -ltracker
-CFLAGS := -O0 -g -ffast-math
+CFLAGS := -O3 -ffast-math
 #-msse -msse2 -mmmx
 LDFLAGS := 
 
