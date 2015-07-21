@@ -135,6 +135,10 @@ PanoramaSaver::SaveState(BMessage* into) const
 		return status;
 	if ((status = into->AddBool("FPS Enabled", fFPSEnabled)) != B_OK)
 		return status;
+	if(fFilename.InitCheck()==B_OK) {
+		if ((status = into->AddString("Filename", fFilename.Path())) != B_OK)
+			return status;
+	}
 	return B_OK;
 }
 
@@ -176,9 +180,6 @@ int32 renderer(void *data)
 
   	for(;;counter++) {
 		fRender->Render();
-		
-		if(!view->fPreview)
-			fader.Apply();
 
     	if(fNoiseEnabled && fNoiseLevel > 0) {
     			noise.SetDispersion(fNoiseLevel);
@@ -192,6 +193,9 @@ int32 renderer(void *data)
     			sepia.SetDepth(fSepiaLevel);
    				sepia.Apply();
     	}
+
+		if(!view->fPreview)
+			fader.Apply();
 
 		view->Paint();
 
@@ -247,14 +251,17 @@ void PanoramaSaver::StopSaver(void)
 status_t 
 PanoramaSaver::StartSaver(BView *view, bool preview)
 {	
-//	fSrcBitmap = BTranslationUtils::GetBitmapFile("/boot/home/Project/Hanarama/samples/test.jpg");
-//	if(fSrcBitmap == NULL)
-//		return B_ERROR;
-	size_t size = 0;	
-	const void *data = fSaverRes->LoadResource('JPEG',"default.jpg" ,&size);
-	BMemoryIO stream(data, size);
-	stream.Seek(0, SEEK_SET);
-	fSrcBitmap = BTranslationUtils::GetBitmap(&stream);
+	printf("fFilename=%s\n",fFilename.Path());
+	
+	if(fFilename.InitCheck()==B_OK) {
+		fSrcBitmap = BTranslationUtils::GetBitmapFile(fFilename.Path());
+	} else {
+		size_t size = 0;
+		const void *data = fSaverRes->LoadResource('JPEG',"default.jpg" ,&size);
+		BMemoryIO stream(data, size);
+		stream.Seek(0, SEEK_SET);
+		fSrcBitmap = BTranslationUtils::GetBitmap(&stream);
+	}
 
 	fCam = new PCamera();
 	fCam->SetMode(CAM_MODE_AUTO_PANNIG);

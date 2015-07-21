@@ -9,10 +9,14 @@
 
 
 #include <View.h>
+#include <Button.h>
 #include <GroupView.h>
 #include <Slider.h>
 #include <String.h>
 #include <CheckBox.h>
+#include <FilePanel.h>
+
+#include "ImageView.h"
 
 class BListView;
 class BScrollView;
@@ -26,6 +30,9 @@ enum {
 	MSG_SET_NOISE_LEVEL		= 'nois',
 	MSG_SET_FILM_LEVEL		= 'film',
 	MSG_SET_SEPIA_LEVEL		= 'sepi',
+	MSG_BTN_DEFAULT 		= 'bdef',
+	MSG_BTN_OPEN_FILE 		= 'bopn',
+	MSG_BTN_OPEN_FLICKR		= 'bflk',
 };
 
 
@@ -62,6 +69,12 @@ class MainTabView : public BGroupView {
 public:
 								MainTabView(BRect rect, const char *name);
 	virtual	void				AttachedToWindow();
+	virtual	void				MessageReceived(BMessage* message);
+private:
+			BButton*			fDefaultButton;
+			BButton*			fFickrButton;
+			BButton*			fSelectButton;
+			BFilePanel*			fOpenPanel;
 };
 
 
@@ -72,7 +85,7 @@ public:
 	virtual	void				AttachedToWindow();
 	virtual	void				MessageReceived(BMessage* message);
 
-	private:
+private:
 			BSlider*			fFPSSlider;
 			BSlider*			fCPUSlider;
 			BSlider*			fQualitySlider;
@@ -86,7 +99,7 @@ public:
 	virtual	void				AttachedToWindow();
 	virtual	void				MessageReceived(BMessage* message);
 
-	private:
+private:
 			BCheckBox*			fNoiseCheckBox;
 			BSlider*			fNoiseSlider;
 			

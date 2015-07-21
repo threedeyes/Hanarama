@@ -31,7 +31,7 @@ PFilmFilter::Apply(void)
 	for(int j=0;j < fLevel/8 ;j++) {
 		int x0 = FMRand() % fWidth;
 		int y0 = FMRand() % fHeight;
-		int len = FMRand() % (fWidth/(levelReversed/6 + 1));
+		int len = FMRand() % (fWidth/8 + 1);
 		for(int l=0;l<len;l++) {
 			fBuffer[y0*fWidth + x0] = 0x00ffffff;
 			int dx = 1 - FMRand() % 3;
@@ -40,10 +40,10 @@ PFilmFilter::Apply(void)
 			y0 = (y0+dy) % fHeight;
 		}
 	}
-	for(int j=0;j < fLevel/4;j++) {
+	for(int j=0;j < fLevel/6;j++) {
 		int x0 = FMRand() % fWidth;
 		int y0 = FMRand() % fHeight;
-		int len = FMRand() % (fWidth/(levelReversed + 1));
+		int len = FMRand() % (fWidth/16 + 1);
 		for(int l=0;l<len;l++) {
 			fBuffer[y0*fWidth + x0] = 0x00ffffff;
 			int dx = 1 - FMRand() % 3;
@@ -60,7 +60,33 @@ PFilmFilter::Apply(void)
 		for(int l=0;l<len;l++) {
 			fBuffer[ ((y0+l)%fHeight) * fWidth + x0] = 0x00ffffff;
 		}
-	}	
+	}
+	
+	uint32 ptr;
+	uint32 color, color1, color2;
+
+	uint8 *c = (uint8*)&color;	
+	uint8 *c1 = (uint8*)&color1;
+	uint8 *c2 = (uint8*)&color2;
+
+	if(fLevel>0) {
+		int y = FMRand() % (fLevel / 4 + 1);
+		
+		for(uint32 i = 0 ; i < fSize; i++) {
+			color1 = fBuffer[i];
+			int r = c1[0] - y;
+			int g = c1[1] - y;
+			int b = c1[2] - y;
+			if(r<0)r=0;
+			if(g<0)g=0;
+			if(b<0)b=0;
+			c[0] = r;	
+			c[1] = g;
+			c[2] = b;
+			
+			fBuffer[i] = color;
+		}
+	}
 }
 
 void

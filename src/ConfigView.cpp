@@ -23,8 +23,12 @@
 #include <StringView.h>
 #include <View.h>
 #include <Path.h>
+#include <Entry.h>
 #include <TabView.h>
 #include <ControlLook.h>
+#include <FilePanel.h>
+
+#include <stdio.h>
 
 extern int32	fFPSLimit;
 extern int32	fCPULimit;
@@ -44,28 +48,42 @@ MainTabView::MainTabView(BRect rect, const char *name)
 	:
 	BGroupView(name, B_VERTICAL, 0)
 {
+	fOpenPanel = new BFilePanel(B_OPEN_PANEL);	
+	
 	BStringView* titleString = new BStringView(B_EMPTY_STRING, "Hanarama 360");
 	titleString->SetFont(be_bold_font);
 
-	BButton* defaultButton = new BButton("default", "Default",
-		new BMessage('defl'),
+	fDefaultButton = new BButton("default", "Default",
+		new BMessage(MSG_BTN_DEFAULT),
 		B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE);
 
-	BButton* selectButton = new BButton("delect", "Select",
-		new BMessage('open'),
+	fFickrButton = new BButton("flickr", "Get Panoramas",
+		new BMessage(MSG_BTN_OPEN_FLICKR),
+		B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE);
+
+	fSelectButton = new BButton("select", "Select",
+		new BMessage(MSG_BTN_OPEN_FILE),
 		B_WILL_DRAW | B_FRAME_EVENTS | B_NAVIGABLE);
 
 	BStringView* copyrightString = new BStringView(B_EMPTY_STRING,
 		"© 2013-2015 Gerasim Troeglazov");
+
+
+	ImageView* imageView = new ImageView(BRect(0,0,0,0));
+	
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.Add(titleString)		
 		.Add(copyrightString)
-		.AddGlue()
+		.AddStrut(10)
+		.Add(imageView)
+		.AddStrut(10)
 		.AddGroup(B_HORIZONTAL, 0)
-			.Add(defaultButton)
+			.Add(fDefaultButton)
 			.AddGlue()
-			.Add(selectButton)
+			.Add(fFickrButton)
+			.AddGlue()
+			.Add(fSelectButton)
 			.End()		
 		.End();
 }
@@ -75,6 +93,45 @@ void
 MainTabView::AttachedToWindow()
 {
 	SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
+	fDefaultButton->SetTarget(this);
+	fFickrButton->SetTarget(this);
+	fSelectButton->SetTarget(this);
+	fOpenPanel->SetTarget(this);
+}
+
+void
+MainTabView::MessageReceived(BMessage* message)
+{
+	switch(message->what) {
+		case B_REFS_RECEIVED:
+		case B_SIMPLE_DATA:
+		{
+			printf("B_REFS_RECEIVED\n");
+			
+			entry_ref ref;
+			if (message->FindRef("refs", &ref) == B_OK) {
+				fFilename.SetTo(&ref);
+			} else
+				fFilename.Unset();
+			printf("fFilename=%s\n",fFilename.Path());
+			break;
+		}
+		case MSG_BTN_DEFAULT:
+			fFilename.Unset();
+			printf("fFilename=%s\n",fFilename.Path());
+			break;
+
+		case MSG_BTN_OPEN_FILE:
+			fOpenPanel->Show();		
+			break;
+
+		case MSG_BTN_OPEN_FLICKR:
+			
+			break;
+
+		default:
+			BView::MessageReceived(message);				
+	}
 }
 
 

@@ -11,6 +11,7 @@ OBJS := Camera.o \
 		SepiaFilter.o \
 		FilmFilter.o \
 		ConfigView.o \
+		ImageView.o \
 		PanoramaSaver.o \
 		Routunes.o
 		
@@ -22,7 +23,7 @@ CC := gcc
 ASM := yasm
 LD := $(CC)
 
-LIBS := -lroot -lbe -lstdc++.r4 -ltranslation
+LIBS := -lroot -lbe -lstdc++.r4 -ltranslation -ltracker
 CFLAGS := -O0 -g -ffast-math
 #-msse -msse2 -mmmx
 LDFLAGS := 
