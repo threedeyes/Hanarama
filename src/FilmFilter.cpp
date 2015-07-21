@@ -32,7 +32,7 @@ PFilmFilter::Apply(void)
 		int y0 = FMRand() % fHeight;
 		int len = FMRand() % (fWidth/25);
 		for(int l=0;l<len;l++) {
-			fBuffer[y0*fWidth + x0] = 0;
+			fBuffer[y0*fWidth + x0] = 0x00ffffff;
 			int dx = 1 - FMRand() % 3;
 			int dy = 1 - FMRand() % 3;
 			x0 = (x0+dx) % fWidth;
@@ -44,7 +44,7 @@ PFilmFilter::Apply(void)
 		int y0 = FMRand() % fHeight;
 		int len = FMRand() % (fWidth/120);
 		for(int l=0;l<len;l++) {
-			fBuffer[y0*fWidth + x0] = 0;
+			fBuffer[y0*fWidth + x0] = 0x00ffffff;
 			int dx = 1 - FMRand() % 3;
 			int dy = 1 - FMRand() % 3;
 			x0 = (x0+dx) % fWidth;
@@ -57,7 +57,7 @@ PFilmFilter::Apply(void)
 		int y0 = FMRand() % fHeight;
 		int len = FMRand() % fHeight;
 		for(int l=0;l<len;l++) {
-			fBuffer[ ((y0+l)%fHeight) * fWidth + x0] = 0;
+			fBuffer[ ((y0+l)%fHeight) * fWidth + x0] = 0x00ffffff;
 		}
 	}	
 }
