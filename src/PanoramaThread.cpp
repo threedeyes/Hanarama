@@ -2,7 +2,6 @@
 #include <math.h>
 #include <string.h>
 #include <String.h>
-#include <TranslationUtils.h>
 
 #include "TestApplication.h"
 #include "TestWindow.h"
@@ -15,13 +14,14 @@
 #include "NoiseFilter.h"
 
 PCamera *fCam = NULL;
+BBitmap *srcBmp = NULL;
+
 float _starttime, _lasttime;
 
 float getTime(void)
 { 
 	return system_time()/1000000.0;
 }
-
 
 int32 renderer(void *data)
 {
@@ -30,7 +30,6 @@ int32 renderer(void *data)
 		
 	FBView *view=(FBView*)data;
   	BBitmap *dstBmp = view->GetBitmap();
-	BBitmap *srcBmp = BTranslationUtils::GetBitmapFile(view->filename.Path());
 
 	fCam = new PCamera();
 	fCam->SetMode(CAM_MODE_MANUAL);	

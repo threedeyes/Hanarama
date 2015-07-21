@@ -11,11 +11,11 @@ OBJS := TestApplication.o \
 		BlurFilter.o \
 		FadeFilter.o \
 		NoiseFilter.o \
+		SepiaFilter.o \
+		FilmFilter.o \
 		Routunes.o
 		
 OBJDIR := build
-
-RSRCS := res/HanaramaViewer.rsrc
 
 OBJS	:= $(addprefix $(OBJDIR)/,$(OBJS))
 
@@ -24,7 +24,7 @@ ASM := yasm
 LD := $(CC)
 
 LIBS := -lroot -lbe -lstdc++.r4 -ltranslation
-CFLAGS := -O3 -ffast-math -I./includes
+CFLAGS := -O0 -g -ffast-math -I./includes
 #-msse -msse2 -mmmx 
 LDFLAGS := 
 
@@ -36,11 +36,13 @@ build : $(BINARY)
 	
 $(BINARY) : $(OBJDIR) $(OBJS) $(RSRCS)
 	$(LD) $(CFLAGS) $(LIBS) $(OBJS) -o $(BINARY) $(LDFLAGS)
-	xres -o $(BINARY) $(RSRCS)
+	rc res/HanaramaViewer.rdef
+	xres -o $(BINARY) res/HanaramaViewer.rsrc
 	mimeset -f $(BINARY)
 
 clean:
 	rm -rf $(OBJDIR)/*.*
+	rm -rf res/HanaramaViewer.rsrc
 	rm -rf $(BINARY)
 
 $(OBJDIR)/%.o : src/%.cpp

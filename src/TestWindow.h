@@ -5,6 +5,7 @@
 #include <Window.h>
 #include <View.h>
 #include <OS.h>
+#include <TranslationUtils.h>
 
 #include "TestApplication.h"
 #include "TestWindow.h"

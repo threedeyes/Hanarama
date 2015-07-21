@@ -32,5 +32,3 @@ resource(101, "BEOS:ICON") #'VICN' array {
 	$"EFAE0000000000003FEFAE3FFFFF3FFFFD01178200040A000105123FEFAE0000"
 	$"000000003FEFAE3FFFFF3FFFFD0117820004"
 };
-
-#resource(1, "logo.png") #'PNG ' import "../../../data/artwork/HAIKU logo - black on white - installer.png";

@@ -5,12 +5,15 @@
 
 extern int32 renderer(void *data);
 extern PCamera *fCam;
+extern BBitmap *srcBmp;	
+
 
 TestWindow::TestWindow(BRect frame, const char* title, BPath path)
 	: BWindow(frame, title, B_TITLED_WINDOW_LOOK,B_NORMAL_WINDOW_FEEL,0)//B_NOT_RESIZABLE|B_NOT_ZOOMABLE)
 {	
+	srcBmp = BTranslationUtils::GetBitmapFile(path.Path());
 
-	fb = new FBView(Bounds(), WIDTH, HEIGHT, path);
+	fb = new FBView(Bounds(), WIDTH, HEIGHT, false);
 	AddChild(fb); 	
  	 	
  	SetPulseRate(5000);
