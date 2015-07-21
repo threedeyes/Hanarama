@@ -13,8 +13,11 @@
 #include "ConfigView.h"
 
 #include <LayoutBuilder.h>
+#include <GroupLayoutBuilder.h>
+#include <GridLayoutBuilder.h>
 #include <ListView.h>
 #include <ScrollView.h>
+#include <CheckBox.h>
 #include <Slider.h>
 #include <StringView.h>
 #include <View.h>
@@ -115,15 +118,30 @@ PerformanceTabView::MessageReceived(BMessage* message)
 FXTabView::FXTabView(BRect rect, const char *name)
 	:
 	BGroupView(name, B_VERTICAL, 0)
-{
-	fNoiseSlider = new SimpleSlider("Noise", 0, 100, new BMessage(MSG_SET_NOISE_LEVEL));
+{	
+	fNoiseCheckBox = new BCheckBox("noiseEnabled", "Noise", NULL);
+	fNoiseCheckBox->SetValue(0);
+		
+	fNoiseSlider = new SimpleSlider("Value", 0, 100, new BMessage(MSG_SET_NOISE_LEVEL));
 	fNoiseSlider->SetValue(fNoiseLevel);
+
+	fFilmCheckBox = new BCheckBox("filmEnabled", "Film effect", NULL);
+	fFilmCheckBox->SetValue(0);
+
+	fFilmSlider = new SimpleSlider("Value", 0, 100, new BMessage(MSG_SET_FILM_LEVEL));
+	fFilmSlider->SetValue(0);
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
 		.SetInsets(B_USE_HALF_ITEM_INSETS, B_USE_HALF_ITEM_INSETS,
 			B_USE_BIG_INSETS, B_USE_HALF_ITEM_INSETS)
 		.AddStrut(roundf(be_control_look->DefaultItemSpacing() / 2))
-		.Add(fNoiseSlider)
+		
+		.Add(BGridLayoutBuilder(B_USE_DEFAULT_SPACING, B_USE_HALF_ITEM_SPACING)
+			.Add(fNoiseCheckBox, 0, 0)
+			.Add(fNoiseSlider, 1, 0)
+			.Add(fFilmCheckBox, 0, 1)
+			.Add(fFilmSlider, 1, 1)	
+		)
 		.AddGlue();
 }
 

@@ -12,6 +12,7 @@
 #include <GroupView.h>
 #include <Slider.h>
 #include <String.h>
+#include <CheckBox.h>
 
 class BListView;
 class BScrollView;
@@ -23,6 +24,7 @@ enum {
 	MSG_SET_CPU_LIMIT		= 'cpul',
 	MSG_SET_QUALITY			= 'qual',
 	MSG_SET_NOISE_LEVEL		= 'nois',
+	MSG_SET_FILM_LEVEL		= 'film',
 };
 
 
@@ -73,7 +75,6 @@ public:
 			BSlider*			fFPSSlider;
 			BSlider*			fCPUSlider;
 			BSlider*			fQualitySlider;
-			BSlider*			fNoiseSlider;
 };
 
 class FXTabView : public BGroupView {
@@ -84,7 +85,11 @@ public:
 	virtual	void				MessageReceived(BMessage* message);
 
 	private:
+			BCheckBox*			fNoiseCheckBox;
 			BSlider*			fNoiseSlider;
+			
+			BCheckBox*			fFilmCheckBox;
+			BSlider*			fFilmSlider;
 };
 
 class ConfigView : public BView {
