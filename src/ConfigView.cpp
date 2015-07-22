@@ -11,6 +11,7 @@
 
 
 #include "ConfigView.h"
+#include "PanoramaSaver.h"
 
 #include <LayoutBuilder.h>
 #include <GroupLayoutBuilder.h>
@@ -42,7 +43,9 @@ extern int32	fSepiaLevel;
 extern bool		fFPSEnabled;
 extern BPath	fFilename;
 extern float	fLastDelay;
-
+extern int32	fTabSelection;
+extern BBitmap*	fPreviwBitmap;
+extern PanoramaSaver* This;
 
 MainTabView::MainTabView(BRect rect, const char *name)
 	:
@@ -69,14 +72,14 @@ MainTabView::MainTabView(BRect rect, const char *name)
 		"© 2013-2015 Gerasim Troeglazov");
 
 
-	ImageView* imageView = new ImageView(BRect(0,0,0,0));
+	fImageView = new ImageView(BRect(0,0,0,0));
 	
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.Add(titleString)		
 		.Add(copyrightString)
 		.AddStrut(10)
-		.Add(imageView)
+		.Add(fImageView)
 		.AddStrut(10)
 		.AddGroup(B_HORIZONTAL, 0)
 			.Add(fDefaultButton)
@@ -86,6 +89,11 @@ MainTabView::MainTabView(BRect rect, const char *name)
 			.Add(fSelectButton)
 			.End()		
 		.End();
+}
+
+MainTabView::~MainTabView()
+{
+	delete fOpenPanel;
 }
 
 
@@ -106,27 +114,32 @@ MainTabView::MessageReceived(BMessage* message)
 		case B_REFS_RECEIVED:
 		case B_SIMPLE_DATA:
 		{
-			printf("B_REFS_RECEIVED\n");
-			
 			entry_ref ref;
 			if (message->FindRef("refs", &ref) == B_OK) {
 				fFilename.SetTo(&ref);
 			} else
 				fFilename.Unset();
-			printf("fFilename=%s\n",fFilename.Path());
 			break;
 		}
 		case MSG_BTN_DEFAULT:
 			fFilename.Unset();
-			printf("fFilename=%s\n",fFilename.Path());
+//			This->StopSaver();			
+//			This->StartSaver();
+//			fImageView->Invalidate();
+			if(fPreviwBitmap!=NULL) {
+				delete fPreviwBitmap;
+				fPreviwBitmap = NULL;
+			}
+			fTabSelection = 0;
 			break;
 
 		case MSG_BTN_OPEN_FILE:
-			fOpenPanel->Show();		
+			fOpenPanel->Show();
+			fTabSelection = 0;
 			break;
 
 		case MSG_BTN_OPEN_FLICKR:
-			
+			fTabSelection = 0;
 			break;
 
 		default:
@@ -182,14 +195,17 @@ PerformanceTabView::MessageReceived(BMessage* message)
 			fFPSLimit = fFPSSlider->Value();
 			fFPSEnabled = fFPSCheckBox->Value() == B_CONTROL_ON;
 			fLastDelay = 0;
+			fTabSelection = 1;
 			break;
 
 		case MSG_SET_CPU_LIMIT:
 			fCPULimit = fCPUSlider->Value();
+			fTabSelection = 1;
 			break;
 
 		case MSG_SET_QUALITY:
 			fQuality = fQualitySlider->Value();
+			fTabSelection = 1;
 			break;
 
 		default:
@@ -257,14 +273,17 @@ FXTabView::MessageReceived(BMessage* message)
 		case MSG_SET_NOISE_LEVEL:
 			fNoiseEnabled = fNoiseCheckBox->Value() == B_CONTROL_ON;
 			fNoiseLevel = fNoiseSlider->Value();
+			fTabSelection = 2;
 			break;
 		case MSG_SET_SEPIA_LEVEL:
 			fSepiaEnabled = fSepiaCheckBox->Value() == B_CONTROL_ON;
 			fSepiaLevel = fSepiaSlider->Value();
+			fTabSelection = 2;
 			break;
 		case MSG_SET_FILM_LEVEL:
 			fFilmEnabled = fFilmCheckBox->Value() == B_CONTROL_ON;
 			fFilmLevel = fFilmSlider->Value();
+			fTabSelection = 2;
 			break;
 		default:
 			BView::MessageReceived(message);		
@@ -288,6 +307,8 @@ ConfigView::ConfigView(BRect frame)
 
 	FXTabView *fxTabfView = new FXTabView(Bounds(), "FX");
 	tabView->AddTab(fxTabfView);
+
+	tabView->Select(fTabSelection);
 
 	AddChild(BLayoutBuilder::Group<>(B_VERTICAL, B_USE_DEFAULT_SPACING)
 		.Add(tabView)

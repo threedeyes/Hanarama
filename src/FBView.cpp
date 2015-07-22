@@ -29,7 +29,7 @@ FBView::FBView(BRect rect, int width, int height, bool preview) :
 	fPreview = preview;
 
 	BRect	fbRect = BRect(0,0,buffer_width-1,buffer_height-1);	
-	bufferBitmap = new BBitmap(fbRect, B_RGB32, true);	
+	bufferBitmap = new BBitmap(fbRect, B_RGB32);	
 
 	fMoveCursor = new BCursor(B_CURSOR_ID_MOVE);
 	

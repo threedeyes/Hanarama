@@ -13,6 +13,7 @@ OBJS := Camera.o \
 		ConfigView.o \
 		ImageView.o \
 		PanoramaSaver.o \
+		BitmapUtils.o \
 		Routunes.o
 		
 OBJDIR := build
@@ -24,7 +25,7 @@ ASM := yasm
 LD := $(CC)
 
 LIBS := -lroot -lbe -lstdc++.r4 -ltranslation -ltracker
-CFLAGS := -O3 -ffast-math
+CFLAGS := -O0 -g -ffast-math
 #-msse -msse2 -mmmx
 LDFLAGS := 
 

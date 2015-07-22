@@ -44,13 +44,16 @@ int32			fSepiaLevel;
 
 bool			fFPSEnabled;
 
+int32			fTabSelection;
+
 float 			fLastDelay = 0;
 
 PRender 		*fRender = NULL;
 BBitmap			*fSrcBitmap = NULL;
+BBitmap			*fPreviwBitmap = NULL;
 BBitmap			*fDstBitmap = NULL;
 
-
+PanoramaSaver	*This = NULL;
 PCamera *fCam = NULL;
 
 extern "C" _EXPORT BScreenSaver *instantiate_screen_saver(BMessage *message, image_id image)
@@ -63,7 +66,12 @@ PanoramaSaver::PanoramaSaver(BMessage *message, image_id image)
 	BScreenSaver(message, image),
  	BHandler("HanaramaSaver")
 {
+	fCam = NULL;
+	This = this;
+	
 	if (message) {
+		if (message->FindInt32("Last Tab Selection", &fTabSelection) != B_OK)
+			fTabSelection = 0;
 		if (message->FindInt32("FPS Limit", &fFPSLimit) != B_OK)
 			fFPSLimit = 30;
 		if (message->FindInt32("CPU Limit", &fCPULimit) != B_OK)
@@ -89,6 +97,15 @@ PanoramaSaver::PanoramaSaver(BMessage *message, image_id image)
 			fFilename.Unset();
 		else
 			fFilename.SetTo(filename);
+		
+		const void *data;
+		ssize_t size;
+		if (message->FindData("CachedBitmap", '#BMP', &data, &size) == B_OK) {
+			BRect	prevRect = BRect(0, 0, PREVIEW_WIDTH - 1, PREVIEW_HEIGHT - 1);	
+			fPreviwBitmap = new BBitmap(prevRect, B_RGB32, true);
+			memcpy(fPreviwBitmap->Bits(), (char*)data, size);
+		} else
+			fPreviwBitmap = NULL;
 	}
 
 	image_info the_info;
@@ -101,7 +118,7 @@ PanoramaSaver::~PanoramaSaver()
 {
 	if (Looper()) {
 		Looper()->RemoveHandler(this);
-	}
+	}		
 }
 
 void PanoramaSaver::StartConfig(BView *view)
@@ -115,6 +132,8 @@ status_t
 PanoramaSaver::SaveState(BMessage* into) const
 {
 	status_t status;
+	if ((status = into->AddInt32("Last Tab Selection", fTabSelection)) != B_OK)
+		return status;
 	if ((status = into->AddInt32("FPS Limit", fFPSLimit)) != B_OK)
 		return status;
 	if ((status = into->AddInt32("CPU Limit", fCPULimit)) != B_OK)
@@ -139,6 +158,11 @@ PanoramaSaver::SaveState(BMessage* into) const
 		if ((status = into->AddString("Filename", fFilename.Path())) != B_OK)
 			return status;
 	}
+	if(fPreviwBitmap!=NULL) {
+		if ((status = into->AddData("CachedBitmap", '#BMP', fPreviwBitmap->Bits(), fPreviwBitmap->BitsLength())) != B_OK)
+			return status;
+	}
+	
 	return B_OK;
 }
 
@@ -227,7 +251,6 @@ int32 renderer(void *data)
   			fader.SetFade(255 - fade);
 		}
 
-		
 		if(fLastDelay>0 && fLastDelay < 1000000)
 			snooze((int)fLastDelay);
   	}
@@ -241,20 +264,39 @@ void PanoramaSaver::StopSaver(void)
 	fCam->stopThread();
 	fRender->LeaveMultiRender();
 	kill_thread(rendererThread);
+	delete fRender;
 
-	if(fSrcBitmap!=NULL) {
-		delete fSrcBitmap;
-		fSrcBitmap = NULL;
+	if(fPreviwBitmap!=NULL) {
+		delete fPreviwBitmap;
+		fPreviwBitmap = NULL;
 	}
+
+	fSaverView->RemoveChild(frameBuffer);
+	delete frameBuffer;
+}
+
+status_t 
+PanoramaSaver::StartSaver(void)
+{
+	StartSaver(fSaverView, fPreview);
 }
 
 status_t 
 PanoramaSaver::StartSaver(BView *view, bool preview)
-{	
-	printf("fFilename=%s\n",fFilename.Path());
-	
+{
+	fSaverView = view;
+	fPreview = preview;
+
 	if(fFilename.InitCheck()==B_OK) {
-		fSrcBitmap = BTranslationUtils::GetBitmapFile(fFilename.Path());
+		if(preview && fPreviwBitmap != NULL) {
+			fSrcBitmap = fPreviwBitmap;
+		} else {
+			fSrcBitmap = BTranslationUtils::GetBitmapFile(fFilename.Path());
+			BRect rect(0, 0, PREVIEW_WIDTH - 1, PREVIEW_HEIGHT - 1);
+			BBitmap *newPreviewBitmap = new BBitmap(rect, B_RGB32);
+			ResizeBitmap(fSrcBitmap, newPreviewBitmap);
+			fPreviwBitmap = newPreviewBitmap;
+		}
 	} else {
 		size_t size = 0;
 		const void *data = fSaverRes->LoadResource('JPEG',"default.jpg" ,&size);
@@ -263,14 +305,14 @@ PanoramaSaver::StartSaver(BView *view, bool preview)
 		fSrcBitmap = BTranslationUtils::GetBitmap(&stream);
 	}
 
-	fCam = new PCamera();
+	if(fCam==NULL)
+		fCam = new PCamera();
+	else
+		fCam->startThread();
 	fCam->SetMode(CAM_MODE_AUTO_PANNIG);
 	
-	if(preview) {
-		frameBuffer = new FBView(view->Bounds(), view->Bounds().Width(), view->Bounds().Height(), preview);
-	} else {
-		frameBuffer = new FBView(view->Bounds(), view->Bounds().Width() * fQuality / 100.0 , view->Bounds().Height()* fQuality / 100.0, preview);
-	}
+	frameBuffer = new FBView(view->Bounds(),
+		view->Bounds().Width() * fQuality / 100.0 , view->Bounds().Height()* fQuality / 100.0, preview);
 	view->AddChild(frameBuffer);
 	
 	rendererThread = spawn_thread(renderer,"rendererThread", B_DISPLAY_PRIORITY, (void*)frameBuffer);

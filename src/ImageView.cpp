@@ -10,6 +10,7 @@
 #include "ImageView.h"
 
 extern BBitmap* fSrcBitmap;
+extern BBitmap* fPreviwBitmap;
 
 ImageView::ImageView(BRect rect) :
 	BView(rect, "ImageView", B_FOLLOW_ALL, B_WILL_DRAW|B_FRAME_EVENTS)
@@ -30,7 +31,11 @@ ImageView::FrameResized(float width, float height)
 void 
 ImageView::Draw(BRect rect)
 {
-	if(fSrcBitmap!=NULL) {
+	BBitmap* prevBitmap = fSrcBitmap;
+	if(fPreviwBitmap!=NULL)
+		prevBitmap = fPreviwBitmap;
+	
+	if(prevBitmap!=NULL) {
 		float width, height, left, top;
 
 		width = Bounds().Width() - 16.0;
@@ -51,7 +56,7 @@ ImageView::Draw(BRect rect)
 
 		BRect imageRect(left, top, left + width, top + height);
 		
-		DrawBitmap(fSrcBitmap, fSrcBitmap->Bounds(), imageRect);
+		DrawBitmap(prevBitmap, prevBitmap->Bounds(), imageRect);
 
 		SetHighColor(0,0,0);
 		StrokeRect(imageRect);

@@ -22,6 +22,8 @@ class BListView;
 class BScrollView;
 class BStringView;
 
+extern int32 fTabSelection;
+
 // message constants
 enum {
 	MSG_SET_FPS_LIMIT		= 'fpsl',
@@ -68,6 +70,7 @@ private:
 class MainTabView : public BGroupView {
 public:
 								MainTabView(BRect rect, const char *name);
+								~MainTabView();
 	virtual	void				AttachedToWindow();
 	virtual	void				MessageReceived(BMessage* message);
 private:
@@ -75,6 +78,7 @@ private:
 			BButton*			fFickrButton;
 			BButton*			fSelectButton;
 			BFilePanel*			fOpenPanel;
+			ImageView* 			fImageView;
 };
 
 
