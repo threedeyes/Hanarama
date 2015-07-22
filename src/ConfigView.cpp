@@ -1,14 +1,8 @@
 /*
- * Copyright 2012-2013 Tri-Edge AI <triedgeai@gmail.com>
- * Copyright 2014 Haiku, Inc. All rights reserved.
- *
- * Distributed under the terms of the MIT license.
- *
- * Authors:
- *		Tri-Edge AI
- *		John Scipione, jscipione@gmail.com
+ * Copyright 2015, Gerasim Troeglazov (3dEyes**), 3dEyes@gmail.com.
+ * All rights reserved.
+ * Distributed under the terms of the MIT License.
  */
-
 
 #include "ConfigView.h"
 #include "PanoramaSaver.h"

@@ -1,6 +1,11 @@
+/*
+ * Copyright 2013, Gerasim Troeglazov (3dEyes**), 3dEyes@gmail.com.
+ * All rights reserved.
+ * Distributed under the terms of the MIT License.
+ */
+
 #ifndef _TEST_WINDOW_H
 #define _TEST_WINDOW_H
-
 
 #include <Window.h>
 #include <View.h>

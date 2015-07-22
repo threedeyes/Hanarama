@@ -1,3 +1,9 @@
+/*
+ * Copyright 2013, Gerasim Troeglazov (3dEyes**), 3dEyes@gmail.com.
+ * All rights reserved.
+ * Distributed under the terms of the MIT License.
+ */
+ 
 #include <ScreenSaver.h>
 #include <StringView.h>
 #include <String.h>

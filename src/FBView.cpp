@@ -1,8 +1,9 @@
 /*
- * Copyright 2010 Your Name <your@email.address>
- * All rights reserved. Distributed under the terms of the MIT license.
+ * Copyright 2013, Gerasim Troeglazov (3dEyes**), 3dEyes@gmail.com.
+ * All rights reserved.
+ * Distributed under the terms of the MIT License.
  */
- 
+
 #include <stdio.h>
 #include <math.h>
 
