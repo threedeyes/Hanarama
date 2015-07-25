@@ -20,6 +20,7 @@
 #define PREVIEW_WIDTH 800
 #define PREVIEW_HEIGHT (PREVIEW_WIDTH / 2)
 
+
 class PanoramaSaver : public BScreenSaver, public BHandler 
 {
 public:

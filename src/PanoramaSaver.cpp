@@ -178,10 +178,6 @@ PanoramaSaver::MessageReceived(BMessage* message)
 {
 }
 
-float getTime(void)
-{
-	return system_time()/1000000.0;
-}
 
 int32 renderer(void *data)
 {
@@ -206,7 +202,7 @@ int32 renderer(void *data)
 		
 	float time;
 
-	_starttime = _lasttime = getTime();
+	_starttime = _lasttime = system_time() / 1000000.0;
 
   	for(;;counter++) {
 		fRender->Render();
@@ -229,7 +225,7 @@ int32 renderer(void *data)
 
 		view->Paint();
 
-		time = getTime();
+		time = system_time()/1000000.0;
 		if(time - _lasttime > 1.0) {
 			float fps = 1.0/((time - _lasttime)/counter);
 			_lasttime = time;
