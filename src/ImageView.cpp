@@ -10,7 +10,7 @@
 #include "ImageView.h"
 
 extern BBitmap* fSrcBitmap;
-extern BBitmap* fPreviwBitmap;
+extern BBitmap* fPreviewBitmap;
 
 ImageView::ImageView(BRect rect) :
 	BView(rect, "ImageView", B_FOLLOW_ALL, B_WILL_DRAW|B_FRAME_EVENTS)
@@ -32,8 +32,8 @@ void
 ImageView::Draw(BRect rect)
 {
 	BBitmap* prevBitmap = fSrcBitmap;
-	if(fPreviwBitmap!=NULL)
-		prevBitmap = fPreviwBitmap;
+	if(fPreviewBitmap!=NULL)
+		prevBitmap = fPreviewBitmap;
 	
 	if(prevBitmap!=NULL) {
 		float width, height, left, top;

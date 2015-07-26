@@ -38,7 +38,7 @@ extern bool		fFPSEnabled;
 extern BPath	fFilename;
 extern float	fLastDelay;
 extern int32	fTabSelection;
-extern BBitmap*	fPreviwBitmap;
+extern BBitmap*	fPreviewBitmap;
 extern PanoramaSaver* This;
 
 MainTabView::MainTabView(BRect rect, const char *name)
@@ -113,17 +113,22 @@ MainTabView::MessageReceived(BMessage* message)
 				fFilename.SetTo(&ref);
 			} else
 				fFilename.Unset();
+			if(fPreviewBitmap!=NULL) {
+				delete fPreviewBitmap;
+				fPreviewBitmap = NULL;
+			}				
+			This->ReloadImages();
+			fImageView->Invalidate();				
 			break;
 		}
 		case MSG_BTN_DEFAULT:
 			fFilename.Unset();
-//			This->StopSaver();			
-//			This->StartSaver();
-//			fImageView->Invalidate();
-			if(fPreviwBitmap!=NULL) {
-				delete fPreviwBitmap;
-				fPreviwBitmap = NULL;
-			}
+			if(fPreviewBitmap!=NULL) {
+				delete fPreviewBitmap;
+				fPreviewBitmap = NULL;
+			}			
+			This->ReloadImages();
+			fImageView->Invalidate();			
 			fTabSelection = 0;
 			break;
 
