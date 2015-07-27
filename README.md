@@ -11,6 +11,11 @@ Clone:
     $ git clone https://github.com/threedeyes/Hanarama
 
 
-Build:
+Build sandalone viewer:
 
     $ make
+
+
+Build ScreenSaver:
+
+    $ make -f Makefile.ScreenSaver
