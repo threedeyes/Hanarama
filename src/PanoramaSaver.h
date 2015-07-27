@@ -30,6 +30,7 @@ public:
 	status_t 			StartSaver(BView *v, bool preview);
 	virtual	void 		StopSaver();
 	status_t			StartSaver();
+	void				ReloadImages(void);
 	virtual void		Draw(BView *v, int32 frame);
 	virtual	status_t	SaveState(BMessage* into) const;
 	virtual	void		MessageReceived(BMessage* message);

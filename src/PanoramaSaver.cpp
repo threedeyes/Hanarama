@@ -56,7 +56,7 @@ float 			fLastDelay = 0;
 
 PRender 		*fRender = NULL;
 BBitmap			*fSrcBitmap = NULL;
-BBitmap			*fPreviwBitmap = NULL;
+BBitmap			*fPreviewBitmap = NULL;
 BBitmap			*fDstBitmap = NULL;
 
 PanoramaSaver	*This = NULL;
@@ -108,10 +108,10 @@ PanoramaSaver::PanoramaSaver(BMessage *message, image_id image)
 		ssize_t size;
 		if (message->FindData("CachedBitmap", '#BMP', &data, &size) == B_OK) {
 			BRect	prevRect = BRect(0, 0, PREVIEW_WIDTH - 1, PREVIEW_HEIGHT - 1);	
-			fPreviwBitmap = new BBitmap(prevRect, B_RGB32, true);
-			memcpy(fPreviwBitmap->Bits(), (char*)data, size);
+			fPreviewBitmap = new BBitmap(prevRect, B_RGB32, true);
+			memcpy(fPreviewBitmap->Bits(), (char*)data, size);
 		} else
-			fPreviwBitmap = NULL;
+			fPreviewBitmap = NULL;
 	}
 
 	image_info the_info;
@@ -164,8 +164,8 @@ PanoramaSaver::SaveState(BMessage* into) const
 		if ((status = into->AddString("Filename", fFilename.Path())) != B_OK)
 			return status;
 	}
-	if(fPreviwBitmap!=NULL) {
-		if ((status = into->AddData("CachedBitmap", '#BMP', fPreviwBitmap->Bits(), fPreviwBitmap->BitsLength())) != B_OK)
+	if(fPreviewBitmap!=NULL) {
+		if ((status = into->AddData("CachedBitmap", '#BMP', fPreviewBitmap->Bits(), fPreviewBitmap->BitsLength())) != B_OK)
 			return status;
 	}
 	
@@ -198,7 +198,10 @@ int32 renderer(void *data)
 		
 	fader.SetFade(255);
   	
-	fRender->InitMultiRenders(fCPULimit);
+	if(view->fPreview)
+		fRender->InitMultiRenders(1);
+	else
+		fRender->InitMultiRenders(fCPULimit);
 		
 	float time;
 
@@ -268,9 +271,9 @@ void PanoramaSaver::StopSaver(void)
 	kill_thread(rendererThread);
 	delete fRender;
 
-	if(fPreviwBitmap!=NULL) {
-		delete fPreviwBitmap;
-		fPreviwBitmap = NULL;
+	if(fPreviewBitmap!=NULL) {
+		delete fPreviewBitmap;
+		fPreviewBitmap = NULL;
 	}
 
 	fSaverView->RemoveChild(frameBuffer);
@@ -283,29 +286,54 @@ PanoramaSaver::StartSaver(void)
 	StartSaver(fSaverView, fPreview);
 }
 
+void
+PanoramaSaver::ReloadImages(void)
+{
+	if(fFilename.InitCheck()==B_OK) {
+		printf("fFilename.InitCheck() = OK\n");
+		if(fPreview && fPreviewBitmap != NULL) {
+			fSrcBitmap = fPreviewBitmap;
+		} else {
+			BBitmap *newBitmap = BTranslationUtils::GetBitmapFile(fFilename.Path());
+			if(fSrcBitmap==NULL) {
+				fSrcBitmap = newBitmap;
+			} else {
+				ResizeBitmap(newBitmap, fSrcBitmap);
+				delete newBitmap;
+			}
+		}
+	} else {
+		printf("fFilename.InitCheck() = NOT\n");
+		size_t size = 0;
+		const void *data = fSaverRes->LoadResource('JPEG',"default.jpg" ,&size);
+		BMemoryIO stream(data, size);
+		stream.Seek(0, SEEK_SET);	
+		BBitmap *newBitmap = BTranslationUtils::GetBitmap(&stream);
+		if(fSrcBitmap == NULL) {
+			fSrcBitmap = newBitmap;
+		} else {
+			ResizeBitmap(newBitmap, fSrcBitmap);
+			delete newBitmap;
+		}
+	}
+	
+	if(fPreviewBitmap == NULL) {
+		BRect rect(0, 0, PREVIEW_WIDTH - 1, PREVIEW_HEIGHT - 1);
+		BBitmap *newPreviewBitmap = new BBitmap(rect, B_RGB32);
+		ResizeBitmap(fSrcBitmap, newPreviewBitmap);
+		fPreviewBitmap = newPreviewBitmap;
+	} else {
+		ResizeBitmap(fSrcBitmap, fPreviewBitmap);
+	}
+}
+
 status_t 
 PanoramaSaver::StartSaver(BView *view, bool preview)
 {
 	fSaverView = view;
 	fPreview = preview;
 
-	if(fFilename.InitCheck()==B_OK) {
-		if(preview && fPreviwBitmap != NULL) {
-			fSrcBitmap = fPreviwBitmap;
-		} else {
-			fSrcBitmap = BTranslationUtils::GetBitmapFile(fFilename.Path());
-			BRect rect(0, 0, PREVIEW_WIDTH - 1, PREVIEW_HEIGHT - 1);
-			BBitmap *newPreviewBitmap = new BBitmap(rect, B_RGB32);
-			ResizeBitmap(fSrcBitmap, newPreviewBitmap);
-			fPreviwBitmap = newPreviewBitmap;
-		}
-	} else {
-		size_t size = 0;
-		const void *data = fSaverRes->LoadResource('JPEG',"default.jpg" ,&size);
-		BMemoryIO stream(data, size);
-		stream.Seek(0, SEEK_SET);
-		fSrcBitmap = BTranslationUtils::GetBitmap(&stream);
-	}
+	ReloadImages();
 
 	if(fCam==NULL)
 		fCam = new PCamera();
